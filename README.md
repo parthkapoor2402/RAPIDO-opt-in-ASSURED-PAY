@@ -128,10 +128,39 @@ Pre-demo checklist: [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md)
 
 ## Deployment
 
-| Layer | Target | Notes |
-|-------|--------|-------|
-| Frontend | [Vercel](https://vercel.com) | Set root directory to `frontend`; configure `NEXT_PUBLIC_API_URL` |
-| Backend | Railway / Render | Point at `backend/`; set `CORS_ORIGINS` to your Vercel URL |
+### Option A — Full stack on Vercel (recommended if you see the “vercel.json required” screen)
+
+This repo includes a root [`vercel.json`](vercel.json) that deploys **both** services:
+
+| Service | Path | Framework |
+|---------|------|-----------|
+| Frontend | `/` | Next.js |
+| Backend | `/api` | FastAPI |
+
+**Vercel project settings:**
+
+1. Import from GitHub — **Root Directory:** `./` (repo root, not `frontend`)
+2. **Framework Preset:** **Services** (required when using `experimentalServices`)
+3. Click **Refresh** on the setup screen after pushing the latest `vercel.json`
+4. **Environment variables** (Production + Preview):
+
+| Variable | Example value |
+|----------|----------------|
+| `NEXT_PUBLIC_API_URL` | `https://YOUR-APP.vercel.app/api` |
+| `NEXT_PUBLIC_DEMO_MODE` | `true` |
+| `CORS_ORIGINS` | `https://YOUR-APP.vercel.app` |
+
+Use your real Vercel URL with no trailing slash. The frontend calls `/api/...` on that base, which routes to FastAPI correctly.
+
+API docs after deploy: `https://YOUR-APP.vercel.app/api/docs`
+
+### Option B — Frontend only (simplest demo)
+
+1. **Root Directory:** `frontend`
+2. **Framework Preset:** Next.js
+3. `NEXT_PUBLIC_API_URL` = `http://localhost:8000` or leave unset for local mocks
+
+Deploy backend separately on Railway/Render if you need a live API.
 
 CI runs backend tests, frontend lint/build, and Playwright demo flows on every push to `main`.
 
