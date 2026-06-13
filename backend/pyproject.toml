@@ -1,0 +1,25 @@
+[project]
+name = "assured-pay-backend"
+version = "0.1.0"
+description = "Assured Pay MVP API — FastAPI backend"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["tests/*"]

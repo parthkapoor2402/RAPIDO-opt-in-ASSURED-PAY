@@ -1,0 +1,1 @@
+"""Mock and production adapters."""
