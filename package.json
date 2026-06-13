@@ -2,7 +2,12 @@
   "name": "rapido-opt-in-assured-pay",
   "version": "0.1.0",
   "private": true,
-  "description": "Assured Pay MVP monorepo — opt-in payment guarantee prototype",
+  "description": "Assured Pay — opt-in payment guarantee for Rapido-style bike ride-hailing (MVP prototype)",
+  "homepage": "https://frontend-navy-eight-23.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/parthkapoor2402/RAPIDO-opt-in-ASSURED-PAY.git"
+  },
   "scripts": {
     "dev": "concurrently -n backend,frontend -c blue,green \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:ui": "npm run dev:frontend",
