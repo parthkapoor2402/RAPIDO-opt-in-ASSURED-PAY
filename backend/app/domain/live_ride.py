@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 from app.domain.enums import FareState
-from app.domain.fare import classify_fare_zone, compute_approved_max, compute_residual_due
+from app.domain.fare import classify_fare_zone, compute_approved_max
 from app.domain.policy import SettlementPolicy
 from app.domain.settlement import compute_settlement
 

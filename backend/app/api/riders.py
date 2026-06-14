@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from app.schemas.recovery import RecoveryStateResponse, RebookingStateResponse
+from app.schemas.recovery import RebookingStateResponse, RecoveryStateResponse
 from app.services.recovery_service import get_recovery_service
 from app.services.residual_due_service import get_residual_due_service
 

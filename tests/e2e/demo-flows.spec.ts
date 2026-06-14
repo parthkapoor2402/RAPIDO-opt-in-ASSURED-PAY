@@ -34,7 +34,7 @@ test.describe("Assured Pay demo flows", () => {
   test("ride within approved max", async ({ page }) => {
     await page.goto("/ride/live");
     await expect(page.getByTestId("fare-trust-indicator")).toBeVisible();
-    await expect(page.getByTestId("fare-trust-indicator").getByText("Within approved max")).toBeVisible();
+    await expect(page.getByTestId("fare-trust-indicator").getByText("On track")).toBeVisible();
     await expect(page.getByTestId("fare-progression-card")).toBeVisible();
     await expect(page.getByTestId("approved-max-indicator")).toBeVisible();
   });

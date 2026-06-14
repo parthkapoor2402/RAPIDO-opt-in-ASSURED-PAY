@@ -35,45 +35,70 @@ interface MockStep {
 
 const MOCK_STEPS: Record<string, MockStep[]> = {
   within_max: [
-    { current_fare: 42, reason_codes: [], timeline_title: "Pickup complete", timeline_subtitle: "Koramangala 5th Block" },
-    { current_fare: 42, reason_codes: [], timeline_title: "En route", timeline_subtitle: "On the way to Indiranagar" },
-    { current_fare: 44, reason_codes: [], timeline_title: "Approaching drop", timeline_subtitle: "Still within estimate" },
+    {
+      current_fare: 42,
+      reason_codes: [],
+      timeline_title: "En route",
+      timeline_subtitle: "No fare change · on track to Indiranagar",
+    },
+    {
+      current_fare: 42,
+      reason_codes: [],
+      timeline_title: "Mid-trip",
+      timeline_subtitle: "Still at estimate · no extra charges",
+    },
+    {
+      current_fare: 42,
+      reason_codes: [],
+      timeline_title: "Approaching drop",
+      timeline_subtitle: "Still at estimate · well within your approved max",
+    },
   ],
   buffer_zone: [
-    { current_fare: 42, reason_codes: [], timeline_title: "Pickup complete", timeline_subtitle: "Koramangala 5th Block" },
+    {
+      current_fare: 42,
+      reason_codes: [],
+      timeline_title: "Pickup complete",
+      timeline_subtitle: "Trip started · Koramangala 5th Block",
+    },
     {
       current_fare: 46,
       reason_codes: ["waiting_after_arrival"],
-      timeline_title: "Waiting at signal",
-      timeline_subtitle: "Fare +₹4",
+      timeline_title: "2 min waiting added",
+      timeline_subtitle: "Signal hold · +₹4 valid waiting charge",
     },
     {
       current_fare: 48,
-      reason_codes: ["waiting_after_arrival"],
-      timeline_title: "Still within max",
-      timeline_subtitle: "Buffer zone active",
+      reason_codes: ["waiting_after_arrival", "rider_requested_route_change"],
+      timeline_title: "Route adjustment applied",
+      timeline_subtitle: "Detour via 100 ft Rd · still covered under ₹49 max",
     },
   ],
   exceeds_review: [
-    { current_fare: 42, reason_codes: [], timeline_title: "Pickup complete", timeline_subtitle: "Koramangala 5th Block" },
+    {
+      current_fare: 42,
+      reason_codes: [],
+      timeline_title: "Pickup complete",
+      timeline_subtitle: "Trip started · Koramangala 5th Block",
+    },
     {
       current_fare: 49,
       reason_codes: ["waiting_after_arrival"],
-      timeline_title: "Waiting charge",
-      timeline_subtitle: "At approved max",
+      timeline_title: "Reached approved max",
+      timeline_subtitle: "Waiting at drop · ₹49 (your approved ceiling)",
     },
     {
       current_fare: 52,
       reason_codes: [],
-      timeline_title: "Above max",
-      timeline_subtitle: "Trip would need review if ended now",
+      timeline_title: "Fare above max",
+      timeline_subtitle: "Unusual extension · we review before any extra charge",
     },
   ],
 };
 
 const REASON_LABELS: Record<string, string> = {
-  waiting_after_arrival: "Waiting after arrival",
-  rider_requested_route_change: "Route change",
+  waiting_after_arrival: "2 min waiting",
+  rider_requested_route_change: "Route adjustment",
   pickup_correction: "Pickup correction",
   toll: "Toll",
 };

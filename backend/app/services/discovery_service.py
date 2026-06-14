@@ -82,10 +82,7 @@ def resolve_discovery_prompts(
                 priority=2,
             )
         )
-    elif (
-        eligible
-        and profile.online_payment_ride_count >= ctx.online_payment_threshold
-    ):
+    elif eligible and profile.online_payment_ride_count >= ctx.online_payment_threshold:
         prompts.append(
             DiscoveryPrompt(
                 id="online_payer",

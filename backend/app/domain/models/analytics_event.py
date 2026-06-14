@@ -1,7 +1,6 @@
 """Analytics event record model (P09)."""
 
 from dataclasses import dataclass
-from datetime import UTC, datetime
 
 
 @dataclass(frozen=True)

@@ -1,7 +1,7 @@
 """Next-session recovery state for riders (P08)."""
 
-from app.domain.rebooking import RebookingState
 from app.domain.models.tracked_due import TrackedOpenDue
+from app.domain.rebooking import RebookingState
 from app.services.residual_due_service import ResidualDueService, get_residual_due_service
 
 

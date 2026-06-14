@@ -24,14 +24,14 @@ describe("trust state mapping", () => {
   });
 
   it("returns readable labels", () => {
-    expect(getTrustStateLabel("within_approved_max")).toBe("Within approved max");
-    expect(getTrustStateLabel("entered_buffer_zone")).toBe("Entered buffer zone");
-    expect(getTrustStateLabel("review_required")).toBe("Review required");
+    expect(getTrustStateLabel("within_approved_max")).toBe("On track");
+    expect(getTrustStateLabel("entered_buffer_zone")).toBe("Still covered");
+    expect(getTrustStateLabel("review_required")).toBe("Review first");
   });
 
   it("returns chip tones", () => {
     expect(getTrustStateTone("within_approved_max")).toBe("success");
-    expect(getTrustStateTone("entered_buffer_zone")).toBe("warning");
-    expect(getTrustStateTone("review_required")).toBe("danger");
+    expect(getTrustStateTone("entered_buffer_zone")).toBe("brand");
+    expect(getTrustStateTone("review_required")).toBe("neutral");
   });
 });

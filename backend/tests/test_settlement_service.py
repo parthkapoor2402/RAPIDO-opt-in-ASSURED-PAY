@@ -2,7 +2,11 @@
 
 import pytest
 
-from app.domain.enums import OverageClassification, PayoutState, SettlementFlowOutcome, SettlementState
+from app.domain.enums import (
+    PayoutState,
+    SettlementFlowOutcome,
+    SettlementState,
+)
 from app.domain.policy import SettlementPolicy
 from app.services.settlement_service import SettlementService
 
@@ -48,7 +52,9 @@ class TestHappyPath:
 class TestValidOverage:
     F, M = 42, 49
 
-    def test_small_valid_creates_residual_captain_fully_credited(self, service: SettlementService) -> None:
+    def test_small_valid_creates_residual_captain_fully_credited(
+        self, service: SettlementService
+    ) -> None:
         result = service.execute(
             ride_id="ride_overage",
             rider_id="rider_commuter",

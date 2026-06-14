@@ -5,8 +5,8 @@ from datetime import UTC, datetime
 from app.core.config import Settings, get_settings
 from app.domain.enums import DueStatus
 from app.domain.models.tracked_due import TrackedOpenDue, new_due_id
-from app.domain.recovery_policy import RecoveryPolicy
 from app.domain.rebooking import RebookingState, evaluate_rebooking
+from app.domain.recovery_policy import RecoveryPolicy
 
 
 class ResidualDueService:

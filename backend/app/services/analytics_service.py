@@ -221,7 +221,19 @@ class AnalyticsService:
                 amount_inr=e.get("amount_inr"),
                 scenario=e.get("scenario", "all"),
                 timestamp=e.get("timestamp", _ts()),
-                metadata={k: v for k, v in e.items() if k not in {"event_type", "ride_id", "rider_id", "amount_inr", "scenario", "timestamp"}},
+                metadata={
+                    k: v
+                    for k, v in e.items()
+                    if k
+                    not in {
+                        "event_type",
+                        "ride_id",
+                        "rider_id",
+                        "amount_inr",
+                        "scenario",
+                        "timestamp",
+                    }
+                },
             )
             for e in filtered
         ]

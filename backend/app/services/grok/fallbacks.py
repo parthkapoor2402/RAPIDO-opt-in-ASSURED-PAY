@@ -53,7 +53,7 @@ def explain_dispute_summary_fallback(
     rider_note: str | None = None,
 ) -> str:
     reasons = ", ".join(reason_codes) if reason_codes else "none recorded"
-    note = f' Rider note: “{rider_note}”.' if rider_note else ""
+    note = f" Rider note: “{rider_note}”." if rider_note else ""
     return (
         f"Case {ride_id}: final fare ₹{actual_a} vs approved max ₹{approved_m} (+₹{excess_inr}). "
         f"Reason codes on file: {reasons}.{note} "

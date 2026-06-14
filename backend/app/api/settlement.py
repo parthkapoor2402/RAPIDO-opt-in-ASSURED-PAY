@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter, HTTPException
 
+from app.core.config import get_settings
 from app.domain.models.payout import CaptainPayoutRecord
 from app.domain.models.residual_due import ResidualDueRecord
 from app.schemas.common import PlaceholderResponse
@@ -15,7 +16,6 @@ from app.schemas.settlement import (
 )
 from app.services.fare_engine_service import FareEngineService
 from app.services.settlement_service import get_settlement_service
-from app.core.config import get_settings
 
 router = APIRouter(tags=["settlement"])
 

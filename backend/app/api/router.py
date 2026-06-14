@@ -1,16 +1,16 @@
 from fastapi import APIRouter
 
 from app.api.analytics import router as analytics_router
-from app.api.assured_pay import router as assured_pay_router
 from app.api.assist import router as assist_router
+from app.api.assured_pay import router as assured_pay_router
 from app.api.booking import router as booking_router
 from app.api.captain import router as captain_router
 from app.api.disputes import router as disputes_router
 from app.api.fare import router as fare_router
 from app.api.health import router as health_router
 from app.api.residual_due import router as residual_due_router
-from app.api.riders import router as riders_router
 from app.api.ride import router as ride_router
+from app.api.riders import router as riders_router
 from app.api.settlement import router as settlement_router
 from app.api.support import router as support_router
 from app.api.version import router as version_router

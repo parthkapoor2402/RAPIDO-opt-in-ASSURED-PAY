@@ -35,7 +35,9 @@ class TrackedOpenDue:
     def is_past_grace(self, policy: RecoveryPolicy, *, now: datetime | None = None) -> bool:
         return self.age_days(policy, now=now) > policy.grace_period_days
 
-    def days_until_grace_expires(self, policy: RecoveryPolicy, *, now: datetime | None = None) -> int:
+    def days_until_grace_expires(
+        self, policy: RecoveryPolicy, *, now: datetime | None = None
+    ) -> int:
         remaining = policy.grace_period_days - self.age_days(policy, now=now)
         return max(0, remaining)
 

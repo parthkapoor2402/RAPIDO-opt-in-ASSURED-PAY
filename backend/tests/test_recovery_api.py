@@ -11,7 +11,9 @@ from app.services.settlement_service import get_settlement_service
 client = TestClient(app)
 
 
-def _seed_overage_settlement(ride_id: str = "api_recovery_ride", rider_id: str = "rider_commuter") -> None:
+def _seed_overage_settlement(
+    ride_id: str = "api_recovery_ride", rider_id: str = "rider_commuter"
+) -> None:
     get_settlement_service().execute(
         ride_id=ride_id,
         rider_id=rider_id,

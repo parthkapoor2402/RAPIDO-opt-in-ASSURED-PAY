@@ -26,7 +26,9 @@ class TestRebookingEligibility:
         assert state.assured_pay_eligible is True
         assert state.restriction == RebookingRestriction.NONE
 
-    def test_open_due_blocks_assured_pay(self, due_service: ResidualDueService, policy: RecoveryPolicy) -> None:
+    def test_open_due_blocks_assured_pay(
+        self, due_service: ResidualDueService, policy: RecoveryPolicy
+    ) -> None:
         due_service.register_open_due(
             ride_id="ride_open",
             rider_id="rider_commuter",
@@ -41,7 +43,9 @@ class TestRebookingEligibility:
         assert state.restriction == RebookingRestriction.ASSURED_PAY_BLOCKED
         assert state.grace_active is True
 
-    def test_repeat_unpaid_past_grace_hard_block(self, due_service: ResidualDueService, policy: RecoveryPolicy) -> None:
+    def test_repeat_unpaid_past_grace_hard_block(
+        self, due_service: ResidualDueService, policy: RecoveryPolicy
+    ) -> None:
         for ride in ("ride_a", "ride_b"):
             due_service.register_open_due(
                 ride_id=ride,
@@ -57,7 +61,9 @@ class TestRebookingEligibility:
         assert state.restriction == RebookingRestriction.REPEAT_UNPAID_BLOCKED
         assert state.unpaid_past_grace_count == 2
 
-    def test_standard_rebooking_always_allowed(self, due_service: ResidualDueService, policy: RecoveryPolicy) -> None:
+    def test_standard_rebooking_always_allowed(
+        self, due_service: ResidualDueService, policy: RecoveryPolicy
+    ) -> None:
         due_service.register_open_due(
             ride_id="ride_open",
             rider_id="rider_repeat",

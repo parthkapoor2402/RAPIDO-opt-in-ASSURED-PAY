@@ -107,7 +107,9 @@ class TestOverageClassification:
         assert result.overage_classification == OverageClassification.SMALL_VALID
 
     def test_suspicious_when_invalid_reason_code(self, policy: SettlementPolicy) -> None:
-        result = compute_settlement(self.estimate_f, self.approved_m, 50, ["not_a_real_code"], policy)
+        result = compute_settlement(
+            self.estimate_f, self.approved_m, 50, ["not_a_real_code"], policy
+        )
         assert result.overage_classification == OverageClassification.SUSPICIOUS_LARGE
         assert result.requires_review is True
 
@@ -126,7 +128,9 @@ class TestOverageClassification:
         result = compute_settlement(self.estimate_f, self.approved_m, 51, [], policy)
         assert result.overage_classification == OverageClassification.SUSPICIOUS_LARGE
 
-    def test_suspicious_above_threshold_even_with_valid_reason(self, policy: SettlementPolicy) -> None:
+    def test_suspicious_above_threshold_even_with_valid_reason(
+        self, policy: SettlementPolicy
+    ) -> None:
         result = compute_settlement(
             self.estimate_f,
             self.approved_m,

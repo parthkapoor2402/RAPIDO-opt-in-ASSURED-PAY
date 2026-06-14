@@ -47,7 +47,9 @@ def _scenarios() -> dict[str, RidePlaybackScenario]:
             steps=[
                 RidePlaybackStep(42, [], "Pickup complete", "Koramangala 5th Block"),
                 RidePlaybackStep(46, ["waiting_after_arrival"], "Waiting at signal", "Fare +₹4"),
-                RidePlaybackStep(48, ["waiting_after_arrival"], "Still within max", "Buffer zone active"),
+                RidePlaybackStep(
+                    48, ["waiting_after_arrival"], "Still within max", "Buffer zone active"
+                ),
             ],
         ),
         "exceeds_review": RidePlaybackScenario(
@@ -58,7 +60,9 @@ def _scenarios() -> dict[str, RidePlaybackScenario]:
             approved_m=49,
             steps=[
                 RidePlaybackStep(42, [], "Pickup complete", "Koramangala 5th Block"),
-                RidePlaybackStep(49, ["waiting_after_arrival"], "Waiting charge", "At approved max"),
+                RidePlaybackStep(
+                    49, ["waiting_after_arrival"], "Waiting charge", "At approved max"
+                ),
                 RidePlaybackStep(52, [], "Above max", "Trip would need review if ended now"),
             ],
         ),

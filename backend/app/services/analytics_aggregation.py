@@ -55,7 +55,11 @@ def compute_kpi_summary(events: list[dict], *, scenario: str = "all") -> KpiSumm
     avg_residual = 3
     bad_debt = unrecovered * avg_residual
 
-    rider_opt_ins = {e.get("rider_id") for e in events if e.get("event_type") == AnalyticsEventType.ASSURED_PAY_OPT_IN.value}
+    rider_opt_ins = {
+        e.get("rider_id")
+        for e in events
+        if e.get("event_type") == AnalyticsEventType.ASSURED_PAY_OPT_IN.value
+    }
     repeat_riders = sum(
         1
         for rider_id in rider_opt_ins
@@ -76,7 +80,9 @@ def compute_kpi_summary(events: list[dict], *, scenario: str = "all") -> KpiSumm
 
     if facr >= 90 and dispute_rate <= 5:
         headline = "Assured Pay is working — riders finish without payment stress"
-        subline = "High frictionless completion with captain payouts protected and low dispute volume."
+        subline = (
+            "High frictionless completion with captain payouts protected and low dispute volume."
+        )
     elif dispute_rate > 10:
         headline = "Recovery attention needed — dispute rate elevated"
         subline = "Review fare-change communication and residual recovery UX for stressed cohorts."

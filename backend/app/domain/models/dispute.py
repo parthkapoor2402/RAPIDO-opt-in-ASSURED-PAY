@@ -1,7 +1,7 @@
 """Rider-initiated dispute model (P08)."""
 
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime
 from uuid import uuid4
 
 from app.domain.enums import DisputeStatus

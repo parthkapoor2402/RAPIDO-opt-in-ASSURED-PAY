@@ -1,0 +1,64 @@
+import { describe, expect, it } from "vitest";
+
+import { getTrustStateCopy, getFareProgressionFooter } from "@/features/live-ride/lib/copy";
+import { buildMockRideProgress, DEMO_SCENARIOS } from "@/features/live-ride/mock/live-ride-mock";
+import {
+  LIVE_RIDE_SCENARIO_EXPECTATIONS,
+  getScenarioExpectation,
+} from "@/features/live-ride/test/scenario-expectations";
+
+describe("buildMockRideProgress", () => {
+  it("exposes all three demo scenarios with three steps each", () => {
+    expect(DEMO_SCENARIOS).toHaveLength(3);
+    for (const scenario of DEMO_SCENARIOS) {
+      expect(scenario.step_count).toBe(3);
+    }
+  });
+
+  it.each(LIVE_RIDE_SCENARIO_EXPECTATIONS.map((s) => [s.id, s.finalStepIndex] as const))(
+    "scenario %s step %i matches trust state and timeline contract",
+    (scenarioId, stepIndex) => {
+      const expected = getScenarioExpectation(scenarioId);
+      const progress = buildMockRideProgress(scenarioId, stepIndex);
+
+      expect(progress.trust_state).toBe(expected.trustState);
+      expect(progress.timeline_title).toBe(expected.timelineTitle);
+      expect(progress.timeline_subtitle).toMatch(expected.timelineSubtitle);
+      expect(progress.current_fare).toBe(parseInt(expected.currentFare.replace(/[₹,]/g, ""), 10));
+
+      const copy = getTrustStateCopy(progress.trust_state);
+      expect(copy.label).toBe(expected.trustLabel);
+      expect(copy.helper).toMatch(expected.trustHelper);
+
+      const footer = getFareProgressionFooter(
+        progress.trust_state,
+        progress.current_fare,
+        progress.approved_m,
+        progress.residual_due_if_ended_now,
+      );
+      if (expected.footerPattern) {
+        expect(footer).toMatch(expected.footerPattern);
+      } else {
+        expect(footer).toBeNull();
+      }
+    },
+  );
+
+  it("within_max steps stay within_approved_max across playback", () => {
+    for (let step = 0; step < 3; step += 1) {
+      expect(buildMockRideProgress("within_max", step).trust_state).toBe("within_approved_max");
+    }
+  });
+
+  it("buffer_zone enters buffer only after a valid reason charge", () => {
+    expect(buildMockRideProgress("buffer_zone", 0).trust_state).toBe("within_approved_max");
+    expect(buildMockRideProgress("buffer_zone", 1).trust_state).toBe("entered_buffer_zone");
+    expect(buildMockRideProgress("buffer_zone", 2).trust_state).toBe("entered_buffer_zone");
+  });
+
+  it("exceeds_review reaches review_required only on final unverified step", () => {
+    expect(buildMockRideProgress("exceeds_review", 0).trust_state).toBe("within_approved_max");
+    expect(buildMockRideProgress("exceeds_review", 1).trust_state).toBe("entered_buffer_zone");
+    expect(buildMockRideProgress("exceeds_review", 2).trust_state).toBe("review_required");
+  });
+});

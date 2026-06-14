@@ -2,7 +2,11 @@
 
 from fastapi import APIRouter, Query
 
-from app.schemas.analytics import AnalyticsEventListResponse, AnalyticsEventResponse, AnalyticsSummaryResponse
+from app.schemas.analytics import (
+    AnalyticsEventListResponse,
+    AnalyticsEventResponse,
+    AnalyticsSummaryResponse,
+)
 from app.schemas.common import PlaceholderResponse
 from app.services.analytics_service import get_analytics_service
 

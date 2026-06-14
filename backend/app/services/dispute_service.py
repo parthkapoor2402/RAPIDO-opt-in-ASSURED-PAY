@@ -2,8 +2,8 @@
 
 from datetime import UTC, datetime, timedelta
 
-from app.domain.models.dispute import Dispute, new_dispute_id
 from app.domain.enums import DisputeStatus, DueStatus
+from app.domain.models.dispute import Dispute, new_dispute_id
 from app.domain.recovery_policy import RecoveryPolicy
 from app.services.residual_due_service import ResidualDueService, get_residual_due_service
 

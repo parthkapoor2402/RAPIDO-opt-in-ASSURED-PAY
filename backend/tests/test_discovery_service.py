@@ -1,5 +1,9 @@
 from app.domain.eligibility import RiderProfile
-from app.services.discovery_service import DiscoveryContext, primary_prompt, resolve_discovery_prompts
+from app.services.discovery_service import (
+    DiscoveryContext,
+    primary_prompt,
+    resolve_discovery_prompts,
+)
 
 
 def test_low_battery_prompt_when_battery_below_threshold() -> None:

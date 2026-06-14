@@ -10,7 +10,9 @@ from app.domain.policy import SettlementPolicy
 from app.domain.settlement import compute_settlement
 
 
-def flow_outcome_from_classification(classification: OverageClassification) -> SettlementFlowOutcome:
+def flow_outcome_from_classification(
+    classification: OverageClassification,
+) -> SettlementFlowOutcome:
     if classification == OverageClassification.NONE:
         return SettlementFlowOutcome.HAPPY_PATH
     if classification == OverageClassification.SMALL_VALID:

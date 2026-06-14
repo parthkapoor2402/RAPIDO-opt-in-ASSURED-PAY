@@ -124,7 +124,7 @@ The transport experience can be excellent while **payment remains the weakest li
 | Home | [/home](https://frontend-navy-eight-23.vercel.app/home) |
 | Booking & discovery | [/booking](https://frontend-navy-eight-23.vercel.app/booking) |
 | Assured Pay opt-in | [/booking/assured-pay](https://frontend-navy-eight-23.vercel.app/booking/assured-pay) |
-| Live ride (fare trust) | [/ride/live](https://frontend-navy-eight-23.vercel.app/ride/live) |
+| Live ride (fare trust) | [/ride/live](https://frontend-navy-eight-23.vercel.app/ride/live) — see [demo scenarios](#live-ride-demo-scenarios) below |
 | Ride completed (happy path) | [/ride/completed?outcome=happy_path](https://frontend-navy-eight-23.vercel.app/ride/completed?outcome=happy_path) |
 | Valid overage | [/ride/completed?outcome=valid_overage](https://frontend-navy-eight-23.vercel.app/ride/completed?outcome=valid_overage) |
 | Suspicious overage | [/ride/completed?outcome=suspicious_overage](https://frontend-navy-eight-23.vercel.app/ride/completed?outcome=suspicious_overage) |
@@ -136,6 +136,18 @@ The transport experience can be excellent while **payment remains the weakest li
 | API docs | [/api/docs](https://frontend-navy-eight-23.vercel.app/api/docs) |
 
 **Suggested demo flow:** See [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md) (~12 min walkthrough).
+
+### Live ride demo scenarios
+
+On **[/ride/live](https://frontend-navy-eight-23.vercel.app/ride/live)**, use the playback controls at the bottom to step through three scripted fare states:
+
+| Scenario | Trust chip | What it shows |
+|----------|------------|---------------|
+| **Within approved max** | On track | Fare stays at estimate; calm timeline |
+| **Entered buffer zone** | Still covered | Valid waiting/route updates within M |
+| **Review required** | Review first | Fare above max; held for ops review, not auto-charged |
+
+Use **Prev / Next** to advance steps within a scenario; switching scenarios resets to step 1.
 
 ---
 
@@ -229,7 +241,7 @@ API base path: **`/api`**. OpenAPI: [live docs](https://frontend-navy-eight-23.v
 |-------|------------|
 | Frontend | Next.js 14, React, TypeScript, Tailwind CSS |
 | Backend | FastAPI, Pydantic v2, Python 3.11+ |
-| Testing | pytest (151), Vitest (83), Playwright (9 E2E flows) |
+| Testing | pytest (151), Vitest (112), Playwright (9 E2E flows) |
 | CI | GitHub Actions — lint, unit tests, build, E2E |
 | Deploy | Vercel Services — Next.js at `/`, FastAPI at `/api` |
 
@@ -240,7 +252,7 @@ API base path: **`/api`**. OpenAPI: [live docs](https://frontend-navy-eight-23.v
 | Suite | Count | Scope |
 |-------|-------|-------|
 | Backend pytest | 151 | Domain policy, settlement, recovery, analytics, Grok guardrails |
-| Frontend Vitest | 83 | Components, contexts, integration flows |
+| Frontend Vitest | 112 | Components, contexts, live-ride scenario integration |
 | Playwright E2E | 9 | Discovery, opt-in, live ride, overage, recovery, Grok fallback |
 
 ```powershell
