@@ -1,5 +1,12 @@
 export type SettlementFlowOutcome = "happy_path" | "valid_overage" | "suspicious_overage";
 
+/** Post-ride completion demo scenario (4 rider-facing states). */
+export type CompletionScenarioId =
+  | "within_max"
+  | "buffer_within_max"
+  | "valid_overage"
+  | "suspicious_overage";
+
 export type SettlementState = "completed" | "residual_due" | "review_required";
 
 export type PayoutState = "pending" | "credited" | "partial" | "held" | "failed";
@@ -42,12 +49,23 @@ export interface SettlementPayload {
   actual_a: number;
   rider_charged: number;
   flow_outcome: SettlementFlowOutcome;
+  completion_scenario?: CompletionScenarioId;
   settlement_state: SettlementState;
   payout: CaptainPayoutPayload;
   residual_due: ResidualDuePayload | null;
   review_case_id: string | null;
+  /** Amount above M held for ops review (C2 only). */
+  amount_under_review?: number | null;
   ledger: LedgerEventPayload[];
   policy_version: string;
+}
+
+export interface CompletionScenario {
+  id: CompletionScenarioId;
+  label: string;
+  description: string;
+  ride_id: string;
+  flow_outcome: SettlementFlowOutcome;
 }
 
 export interface SettlementScenario {

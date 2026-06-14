@@ -9,11 +9,15 @@ import { RideOptionRow } from "@/components/layout/RideOptionRow";
 import { StickyActionBar } from "@/components/layout/StickyActionBar";
 import { AssuredPayBookingCard } from "@/features/assured-pay/components/AssuredPayBookingCard";
 import { useAssuredPayBooking } from "@/features/assured-pay/context/AssuredPayBookingContext";
+import { RIDE_CATEGORIES } from "@/features/assured-pay/lib/ride-categories";
+import { formatInr } from "@/features/assured-pay/lib/fare";
 import { CTAButton } from "@/components/ui/CTAButton";
 
 export function BookingPageContent() {
   const {
     eligibility,
+    selectedCategory,
+    setSelectedCategory,
     primaryPromptId,
     optIn,
     openOptIn,
@@ -21,7 +25,10 @@ export function BookingPageContent() {
     setPaymentMethod,
   } = useAssuredPayBooking();
 
-  const bookLabel = optIn.enabled ? "Book Bike · Assured Pay on" : "Book Bike";
+  const category = RIDE_CATEGORIES.find((item) => item.id === selectedCategory)!;
+  const bookLabel = optIn.enabled
+    ? `Book ${category.label} · Assured Pay on`
+    : `Book ${category.label}`;
 
   return (
     <>
@@ -44,13 +51,20 @@ export function BookingPageContent() {
       <BottomSheetPanel className="space-y-4">
         <h1 className="sr-only">Book a ride</h1>
 
-        <RideOptionRow
-          name="Bike"
-          capacity={1}
-          price={`₹${eligibility.F}`}
-          meta="2 mins away · Drop 3:02 pm"
-          selected
-        />
+        <div className="space-y-2" data-testid="ride-category-list">
+          {RIDE_CATEGORIES.map((item) => (
+            <RideOptionRow
+              key={item.id}
+              name={item.label}
+              icon={item.icon}
+              capacity={item.capacity}
+              price={formatInr(item.estimateF)}
+              meta={`${item.etaLabel} · Max ${formatInr(item.estimateF + item.buffer)} with Assured Pay`}
+              selected={selectedCategory === item.id}
+              onSelect={() => setSelectedCategory(item.id)}
+            />
+          ))}
+        </div>
 
         <AssuredPayBookingCard
           eligibility={eligibility}
@@ -75,7 +89,9 @@ export function BookingPageContent() {
             Pay: {paymentMethod === "cash" ? "Cash" : "UPI"}
           </button>
           <Link href={optIn.enabled ? "/ride/live" : "/booking/assured-pay"}>
-            <CTAButton fullWidth>{bookLabel}</CTAButton>
+            <CTAButton fullWidth data-testid="book-ride-cta">
+              {bookLabel}
+            </CTAButton>
           </Link>
         </div>
       </StickyActionBar>

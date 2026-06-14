@@ -10,7 +10,14 @@ import {
   type ReactNode,
 } from "react";
 
-import { DEFAULT_BUFFER_INR, DEFAULT_ESTIMATE_F } from "@/features/assured-pay/lib/fare";
+import {
+  DEFAULT_RIDE_CATEGORY_ID,
+  getCategoryFare,
+  getRideCategory,
+  isRideCategoryId,
+  type RideCategoryId,
+  type RideCategoryConfig,
+} from "@/features/assured-pay/lib/ride-categories";
 import {
   discoveryContextFromRiderId,
   getPrimaryPrompt,
@@ -29,6 +36,8 @@ import { useRecoveryOptional } from "@/features/recovery/context/RecoveryProvide
 
 interface AssuredPayBookingContextValue {
   eligibility: AssuredPayEligibility;
+  selectedCategory: RideCategoryId;
+  setSelectedCategory: (category: RideCategoryId) => void;
   primaryPromptId: DiscoverySource | null;
   paymentMethod: PaymentMethod;
   setPaymentMethod: (method: PaymentMethod) => void;
@@ -44,6 +53,7 @@ const AssuredPayBookingContext = createContext<AssuredPayBookingContextValue | n
 
 const VALID_REASON_CODES = ["waiting", "route_change", "toll", "pickup_correction"];
 const OPT_IN_STORAGE_KEY = "assured-pay-opt-in";
+const CATEGORY_STORAGE_KEY = "assured-pay-category";
 
 const DEFAULT_OPT_IN: OptInState = {
   enabled: false,
@@ -76,6 +86,21 @@ function readStoredOptIn(riderId: string): OptInState {
   }
 }
 
+function readStoredCategory(): RideCategoryId {
+  if (typeof window === "undefined") {
+    return DEFAULT_RIDE_CATEGORY_ID;
+  }
+  try {
+    const raw = sessionStorage.getItem(CATEGORY_STORAGE_KEY);
+    if (raw && isRideCategoryId(raw)) {
+      return raw;
+    }
+  } catch {
+    /* ignore */
+  }
+  return DEFAULT_RIDE_CATEGORY_ID;
+}
+
 function persistOptIn(riderId: string, state: OptInState): void {
   if (typeof window === "undefined") {
     return;
@@ -87,11 +112,20 @@ function persistOptIn(riderId: string, state: OptInState): void {
   sessionStorage.setItem(OPT_IN_STORAGE_KEY, JSON.stringify({ ...state, riderId }));
 }
 
-function buildEligibility(ctx: DiscoveryContextInput): AssuredPayEligibility {
+function persistCategory(category: RideCategoryId): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+  sessionStorage.setItem(CATEGORY_STORAGE_KEY, category);
+}
+
+function buildEligibility(
+  ctx: DiscoveryContextInput,
+  categoryId: RideCategoryId,
+): AssuredPayEligibility {
   const { eligible, blockReasons } = isEligible(ctx);
-  const F = DEFAULT_ESTIMATE_F;
-  const buffer = DEFAULT_BUFFER_INR;
-  const M = F + buffer;
+  const category = getRideCategory(categoryId);
+  const { F, buffer, M } = getCategoryFare(categoryId);
   const prompts = resolveDiscoveryPrompts(ctx, eligible);
 
   return {
@@ -100,6 +134,8 @@ function buildEligibility(ctx: DiscoveryContextInput): AssuredPayEligibility {
     F,
     buffer,
     M,
+    categoryId,
+    categoryLabel: category.label,
     freeTrialAvailable: Boolean(ctx.freeTrialAvailable && eligible),
     validReasonCodes: VALID_REASON_CODES,
     hasPaymentInstrument: ctx.hasPaymentInstrument !== false,
@@ -122,10 +158,17 @@ export function AssuredPayBookingProvider({ children }: AssuredPayBookingProvide
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
   const [batteryLowOverride, setBatteryLowOverride] = useState(false);
   const [optIn, setOptIn] = useState<OptInState>(DEFAULT_OPT_IN);
+  const [selectedCategory, setSelectedCategoryState] = useState<RideCategoryId>(readStoredCategory);
 
   useEffect(() => {
     setOptIn(readStoredOptIn(riderId));
+    setSelectedCategoryState(readStoredCategory());
   }, [riderId]);
+
+  const setSelectedCategory = useCallback((category: RideCategoryId) => {
+    setSelectedCategoryState(category);
+    persistCategory(category);
+  }, []);
 
   const discoveryContext = useMemo<DiscoveryContextInput>(
     () => ({
@@ -144,8 +187,8 @@ export function AssuredPayBookingProvider({ children }: AssuredPayBookingProvide
   );
 
   const eligibility = useMemo(
-    () => buildEligibility(discoveryContext),
-    [discoveryContext],
+    () => buildEligibility(discoveryContext, selectedCategory),
+    [discoveryContext, selectedCategory],
   );
 
   const primaryPromptId = useMemo(
@@ -176,6 +219,8 @@ export function AssuredPayBookingProvider({ children }: AssuredPayBookingProvide
   const value = useMemo(
     () => ({
       eligibility,
+      selectedCategory,
+      setSelectedCategory,
       primaryPromptId,
       paymentMethod,
       setPaymentMethod,
@@ -188,6 +233,8 @@ export function AssuredPayBookingProvider({ children }: AssuredPayBookingProvide
     }),
     [
       eligibility,
+      selectedCategory,
+      setSelectedCategory,
       primaryPromptId,
       paymentMethod,
       batteryLowOverride,
@@ -211,4 +258,10 @@ export function useAssuredPayBooking() {
     throw new Error("useAssuredPayBooking must be used within AssuredPayBookingProvider");
   }
   return context;
+}
+
+/** Safe outside provider — defaults to bike for shell chrome. */
+export function useSelectedRideCategory(): RideCategoryConfig {
+  const context = useContext(AssuredPayBookingContext);
+  return getRideCategory(context?.selectedCategory ?? DEFAULT_RIDE_CATEGORY_ID);
 }

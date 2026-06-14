@@ -42,13 +42,13 @@ test.describe("Assured Pay demo flows", () => {
   test("small valid overage at completion", async ({ page }) => {
     await page.goto("/ride/completed?outcome=valid_overage");
     await expect(page.getByTestId("ride-completed-page")).toBeVisible();
-    await expect(page.getByTestId("settlement-summary")).toContainText("Residual due open");
-    await expect(page.getByRole("button", { name: /pay remaining/i })).toBeVisible();
+    await expect(page.getByTestId("settlement-summary")).toContainText("₹3 due");
+    await expect(page.getByRole("button", { name: "Pay ₹3" })).toBeVisible();
   });
 
   test("suspicious overage review flow", async ({ page }) => {
     await page.goto("/ride/completed?outcome=suspicious_overage");
-    await expect(page.getByRole("heading", { name: /under review/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /trip complete/i })).toBeVisible();
     await expect(page.getByTestId("settlement-summary")).toContainText("Under review");
   });
 

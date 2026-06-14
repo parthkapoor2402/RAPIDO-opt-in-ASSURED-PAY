@@ -42,10 +42,10 @@ export function HomePageContent() {
         ))}
       </div>
 
-      <RapidoPromoStrip message="Try Assured Pay on your next bike ride" href="/booking/assured-pay" />
+      <RapidoPromoStrip message="Try Assured Pay on your next ride" href="/booking/assured-pay" />
 
       <Link href="/booking">
-        <CTAButton fullWidth>Book bike with Assured Pay</CTAButton>
+        <CTAButton fullWidth>Book a ride with Assured Pay</CTAButton>
       </Link>
     </div>
   );

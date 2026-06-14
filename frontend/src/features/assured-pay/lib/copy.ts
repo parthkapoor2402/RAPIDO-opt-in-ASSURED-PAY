@@ -22,7 +22,7 @@ export const COVERAGE = {
     "Cash-only rides without a saved payment method",
     "Fare increases above your approved max without a valid reason",
     "Disputes on rides with open residual due",
-    "Non-bike categories (MVP is bike-only)",
+    "Booking without opting in to an approved max",
   ],
 } as const;
 

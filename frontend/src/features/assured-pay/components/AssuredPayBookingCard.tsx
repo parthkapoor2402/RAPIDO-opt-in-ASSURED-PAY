@@ -46,7 +46,7 @@ export function AssuredPayBookingCard({
         <p>{message}</p>
         {eligibility.rebookingRestriction === "repeat_unpaid_blocked" ? (
           <p className="text-xs" data-testid="repeat-unpaid-notice">
-            Standard bike booking is still available. Clear open balances to restore Assured Pay.
+            Standard {eligibility.categoryLabel.toLowerCase()} booking is still available. Clear open balances to restore Assured Pay.
           </p>
         ) : null}
         {eligibility.blockReasons.includes("open_residual") ? (

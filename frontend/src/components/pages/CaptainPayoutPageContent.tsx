@@ -15,13 +15,13 @@ import {
   useSettlement,
 } from "@/features/settlement/context/SettlementProvider";
 import { formatInr } from "@/features/settlement/lib/format";
-import type { SettlementFlowOutcome } from "@/features/settlement/types";
+import { flowOutcomeToScenario } from "@/features/settlement/mock/settlement-mock";
+import { parseCompletionScenario } from "@/features/settlement/lib/completion-scenario";
+import type { CompletionScenarioId } from "@/features/settlement/types";
 
-function parseOutcome(value: string | null): SettlementFlowOutcome {
-  if (value === "suspicious_overage" || value === "happy_path") {
-    return value;
-  }
-  return "valid_overage";
+function parseCaptainScenario(value: string | null): CompletionScenarioId {
+  if (value === "happy_path") return "within_max";
+  return parseCompletionScenario(value);
 }
 
 function CaptainPayoutInner() {
@@ -87,9 +87,9 @@ function CaptainPayoutInner() {
   );
 }
 
-function CaptainPayoutWithOutcome({ outcome }: { outcome: SettlementFlowOutcome }) {
+function CaptainPayoutWithScenario({ scenario }: { scenario: CompletionScenarioId }) {
   return (
-    <SettlementProvider initialOutcome={outcome} autoRun>
+    <SettlementProvider initialScenario={scenario} autoRun>
       <CaptainPayoutInner />
     </SettlementProvider>
   );
@@ -97,8 +97,8 @@ function CaptainPayoutWithOutcome({ outcome }: { outcome: SettlementFlowOutcome 
 
 function CaptainPayoutFromQuery() {
   const params = useSearchParams();
-  const outcome = parseOutcome(params.get("outcome"));
-  return <CaptainPayoutWithOutcome outcome={outcome} />;
+  const scenario = parseCaptainScenario(params.get("outcome"));
+  return <CaptainPayoutWithScenario scenario={scenario} />;
 }
 
 export function CaptainPayoutPageContent() {
@@ -112,7 +112,8 @@ export function CaptainPayoutPageContent() {
 export function CaptainPayoutPageContentForOutcome({
   outcome = "valid_overage",
 }: {
-  outcome?: SettlementFlowOutcome;
+  outcome?: CompletionScenarioId | "happy_path";
 }) {
-  return <CaptainPayoutWithOutcome outcome={outcome} />;
+  const scenario = outcome === "happy_path" ? "within_max" : flowOutcomeToScenario(outcome);
+  return <CaptainPayoutWithScenario scenario={scenario} />;
 }

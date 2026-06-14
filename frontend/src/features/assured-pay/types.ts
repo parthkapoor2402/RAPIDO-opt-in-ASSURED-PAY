@@ -16,12 +16,16 @@ export interface DiscoveryPrompt {
   priority: number;
 }
 
+import type { RideCategoryId } from "@/features/assured-pay/lib/ride-categories";
+
 export interface AssuredPayEligibility {
   eligible: boolean;
   blockReasons: string[];
   F: number;
   buffer: number;
   M: number;
+  categoryId: RideCategoryId;
+  categoryLabel: string;
   freeTrialAvailable: boolean;
   validReasonCodes: string[];
   hasPaymentInstrument: boolean;

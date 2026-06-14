@@ -11,53 +11,69 @@ import {
 } from "react";
 
 import { executeSettlementWithFallback } from "@/features/settlement/api/settlement";
-import { scenarioExecuteInput, SETTLEMENT_SCENARIOS } from "@/features/settlement/mock/settlement-mock";
-import type { SettlementFlowOutcome, SettlementPayload } from "@/features/settlement/types";
+import { completionToFlowOutcome } from "@/features/settlement/lib/completion-scenario";
+import {
+  COMPLETION_SCENARIOS,
+  scenarioExecuteInput,
+} from "@/features/settlement/mock/settlement-mock";
+import type { CompletionScenarioId, SettlementPayload } from "@/features/settlement/types";
 import { useAssuredPayBooking } from "@/features/assured-pay/context/AssuredPayBookingContext";
 
 interface SettlementContextValue {
   settlement: SettlementPayload | null;
-  outcome: SettlementFlowOutcome;
+  scenario: CompletionScenarioId;
   loading: boolean;
-  scenarios: typeof SETTLEMENT_SCENARIOS;
-  setOutcome: (outcome: SettlementFlowOutcome) => void;
-  runSettlement: (outcome?: SettlementFlowOutcome) => Promise<void>;
+  scenarios: typeof COMPLETION_SCENARIOS;
+  setScenario: (scenario: CompletionScenarioId) => void;
+  runSettlement: (scenario?: CompletionScenarioId) => Promise<void>;
 }
 
 const SettlementContext = createContext<SettlementContextValue | null>(null);
 
 interface SettlementProviderProps {
   children: ReactNode;
-  initialOutcome?: SettlementFlowOutcome;
+  initialScenario?: CompletionScenarioId;
+  /** @deprecated Use initialScenario */
+  initialOutcome?: CompletionScenarioId | "happy_path";
   autoRun?: boolean;
+}
+
+function resolveInitialScenario(
+  initialScenario?: CompletionScenarioId,
+  initialOutcome?: CompletionScenarioId | "happy_path",
+): CompletionScenarioId {
+  if (initialScenario) return initialScenario;
+  if (initialOutcome === "happy_path") return "within_max";
+  if (initialOutcome) return initialOutcome;
+  return "within_max";
 }
 
 export function SettlementProvider({
   children,
-  initialOutcome = "happy_path",
+  initialScenario,
+  initialOutcome,
   autoRun = true,
 }: SettlementProviderProps) {
   const { eligibility } = useAssuredPayBooking();
-  const [outcome, setOutcome] = useState<SettlementFlowOutcome>(initialOutcome);
+  const resolvedInitial = resolveInitialScenario(initialScenario, initialOutcome);
+  const [scenario, setScenario] = useState<CompletionScenarioId>(resolvedInitial);
   const [settlement, setSettlement] = useState<SettlementPayload | null>(null);
   const [loading, setLoading] = useState(autoRun);
 
   const runSettlement = useCallback(
-    async (nextOutcome?: SettlementFlowOutcome) => {
-      const activeOutcome = nextOutcome ?? outcome;
+    async (nextScenario?: CompletionScenarioId) => {
+      const activeScenario = nextScenario ?? scenario;
       setLoading(true);
       try {
-        const input = scenarioExecuteInput(activeOutcome);
-        input.estimate_f = eligibility.F;
-        input.approved_m = eligibility.M;
-        const result = await executeSettlementWithFallback(activeOutcome, input);
+        const input = scenarioExecuteInput(activeScenario, eligibility.F, eligibility.buffer);
+        const result = await executeSettlementWithFallback(activeScenario, input);
         setSettlement(result);
-        setOutcome(activeOutcome);
+        setScenario(activeScenario);
       } finally {
         setLoading(false);
       }
     },
-    [outcome, eligibility.F, eligibility.M],
+    [scenario, eligibility.F, eligibility.buffer],
   );
 
   useEffect(() => {
@@ -70,13 +86,11 @@ export function SettlementProvider({
     void (async () => {
       setLoading(true);
       try {
-        const input = scenarioExecuteInput(initialOutcome);
-        input.estimate_f = eligibility.F;
-        input.approved_m = eligibility.M;
-        const result = await executeSettlementWithFallback(initialOutcome, input);
+        const input = scenarioExecuteInput(resolvedInitial, eligibility.F, eligibility.buffer);
+        const result = await executeSettlementWithFallback(resolvedInitial, input);
         if (!cancelled) {
           setSettlement(result);
-          setOutcome(initialOutcome);
+          setScenario(resolvedInitial);
         }
       } finally {
         if (!cancelled) {
@@ -88,18 +102,18 @@ export function SettlementProvider({
     return () => {
       cancelled = true;
     };
-  }, [autoRun, initialOutcome, eligibility.F, eligibility.M]);
+  }, [autoRun, resolvedInitial, eligibility.F, eligibility.buffer]);
 
   const value = useMemo(
     () => ({
       settlement,
-      outcome,
+      scenario,
       loading,
-      scenarios: SETTLEMENT_SCENARIOS,
-      setOutcome,
+      scenarios: COMPLETION_SCENARIOS,
+      setScenario,
       runSettlement,
     }),
-    [settlement, outcome, loading, runSettlement],
+    [settlement, scenario, loading, runSettlement],
   );
 
   return <SettlementContext.Provider value={value}>{children}</SettlementContext.Provider>;
@@ -111,4 +125,10 @@ export function useSettlement() {
     throw new Error("useSettlement must be used within SettlementProvider");
   }
   return ctx;
+}
+
+/** Flow outcome derived from active completion scenario (for legacy checks). */
+export function useSettlementFlowOutcome() {
+  const { scenario } = useSettlement();
+  return completionToFlowOutcome(scenario);
 }

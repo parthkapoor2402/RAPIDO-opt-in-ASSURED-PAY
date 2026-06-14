@@ -61,4 +61,22 @@ describe("buildMockRideProgress", () => {
     expect(buildMockRideProgress("exceeds_review", 1).trust_state).toBe("entered_buffer_zone");
     expect(buildMockRideProgress("exceeds_review", 2).trust_state).toBe("review_required");
   });
+
+  it.each([
+    [85, 10],
+    [145, 15],
+  ] as const)("buffer and review scenarios stay truthful for F=%i buffer=%i", (F, buffer) => {
+    const M = F + buffer;
+    const bufferFinal = buildMockRideProgress("buffer_zone", 2, F, true, buffer);
+    expect(bufferFinal.trust_state).toBe("entered_buffer_zone");
+    expect(bufferFinal.current_fare).toBe(M - 1);
+
+    const reviewMid = buildMockRideProgress("exceeds_review", 1, F, true, buffer);
+    expect(reviewMid.trust_state).toBe("entered_buffer_zone");
+    expect(reviewMid.current_fare).toBe(M);
+
+    const reviewFinal = buildMockRideProgress("exceeds_review", 2, F, true, buffer);
+    expect(reviewFinal.trust_state).toBe("review_required");
+    expect(reviewFinal.current_fare).toBeGreaterThan(M);
+  });
 });

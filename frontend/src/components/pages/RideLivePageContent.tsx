@@ -11,10 +11,15 @@ import { LiveRideEventTimeline } from "@/features/live-ride/components/LiveRideE
 import { LiveRidePlaybackControls } from "@/features/live-ride/components/LiveRidePlaybackControls";
 import { ReasonCodeUpdateList } from "@/features/live-ride/components/ReasonCodeUpdateList";
 import { GrokExplanationPanel } from "@/features/grok/components/GrokExplanationPanel";
+import { useAssuredPayBooking } from "@/features/assured-pay/context/AssuredPayBookingContext";
+import { getRideCategory } from "@/features/assured-pay/lib/ride-categories";
 import { LIVE_RIDE_PAGE } from "@/features/live-ride/lib/copy";
+import { StatusChip } from "@/components/ui/StatusChip";
 import { useLiveRide } from "@/features/live-ride/context/LiveRideProvider";
 
 export function RideLivePageContent() {
+  const { eligibility } = useAssuredPayBooking();
+  const category = getRideCategory(eligibility.categoryId);
   const {
     progress,
     trustState,
@@ -51,8 +56,13 @@ export function RideLivePageContent() {
       </MapHeroPlaceholder>
 
       <BottomSheetPanel className="space-y-3">
-        <div className="space-y-0.5">
-          <h1 className="text-base font-bold text-rapido-black">{LIVE_RIDE_PAGE.title}</h1>
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-base font-bold text-rapido-black">{LIVE_RIDE_PAGE.title}</h1>
+            <span data-testid="live-ride-category-chip">
+              <StatusChip label={`${category.icon} ${category.label}`} tone="brand" />
+            </span>
+          </div>
           <p className="text-xs text-rapido-grey">{LIVE_RIDE_PAGE.subtitle}</p>
         </div>
 

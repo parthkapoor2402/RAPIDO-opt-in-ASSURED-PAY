@@ -1,3 +1,4 @@
+import { BIKE_DEMO_BASE } from "@/features/assured-pay/lib/scenario-fare-engine";
 import { API_PREFIX, apiUrl } from "@/lib/api";
 
 import type { RideProgressPayload, RideScenarioSummary } from "@/features/live-ride/types";
@@ -63,11 +64,32 @@ export async function fetchRideProgressWithFallback(
   stepIndex: number,
   estimateF: number,
   assuredPayActive: boolean,
+  buffer?: number,
 ): Promise<RideProgressPayload & { timeline_title?: string; timeline_subtitle?: string }> {
+  const resolvedBuffer = buffer ?? BIKE_DEMO_BASE.buffer;
+  const categoryUsesMock =
+    estimateF !== BIKE_DEMO_BASE.F || resolvedBuffer !== BIKE_DEMO_BASE.buffer;
+
+  if (categoryUsesMock) {
+    return buildMockRideProgress(
+      scenarioId,
+      stepIndex,
+      estimateF,
+      assuredPayActive,
+      resolvedBuffer,
+    );
+  }
+
   try {
     return await fetchScenarioStep(scenarioId, stepIndex);
   } catch {
-    return buildMockRideProgress(scenarioId, stepIndex, estimateF, assuredPayActive);
+    return buildMockRideProgress(
+      scenarioId,
+      stepIndex,
+      estimateF,
+      assuredPayActive,
+      resolvedBuffer,
+    );
   }
 }
 

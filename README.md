@@ -1,6 +1,6 @@
 # Assured Pay
 
-**Opt-in payment guarantee for Rapido-style bike ride-hailing**
+**Opt-in payment guarantee for Rapido-style ride-hailing (Bike, Auto, Cab)**
 
 [![Live Demo](https://img.shields.io/badge/demo-live-00C853?style=for-the-badge)](https://frontend-navy-eight-23.vercel.app/home)
 [![Stack](https://img.shields.io/badge/stack-Next.js_14_·_FastAPI-000?style=for-the-badge&logo=next.js)](https://frontend-navy-eight-23.vercel.app)
@@ -125,9 +125,10 @@ The transport experience can be excellent while **payment remains the weakest li
 | Booking & discovery | [/booking](https://frontend-navy-eight-23.vercel.app/booking) |
 | Assured Pay opt-in | [/booking/assured-pay](https://frontend-navy-eight-23.vercel.app/booking/assured-pay) |
 | Live ride (fare trust) | [/ride/live](https://frontend-navy-eight-23.vercel.app/ride/live) — see [demo scenarios](#live-ride-demo-scenarios) below |
-| Ride completed (happy path) | [/ride/completed?outcome=happy_path](https://frontend-navy-eight-23.vercel.app/ride/completed?outcome=happy_path) |
-| Valid overage | [/ride/completed?outcome=valid_overage](https://frontend-navy-eight-23.vercel.app/ride/completed?outcome=valid_overage) |
-| Suspicious overage | [/ride/completed?outcome=suspicious_overage](https://frontend-navy-eight-23.vercel.app/ride/completed?outcome=suspicious_overage) |
+| Ride completed (within max) | [/ride/completed?outcome=within_max](https://frontend-navy-eight-23.vercel.app/ride/completed?outcome=within_max) |
+| Buffer zone · within max | [/ride/completed?outcome=buffer_within_max](https://frontend-navy-eight-23.vercel.app/ride/completed?outcome=buffer_within_max) |
+| Valid overage (residual due) | [/ride/completed?outcome=valid_overage](https://frontend-navy-eight-23.vercel.app/ride/completed?outcome=valid_overage) |
+| Suspicious overage (review) | [/ride/completed?outcome=suspicious_overage](https://frontend-navy-eight-23.vercel.app/ride/completed?outcome=suspicious_overage) |
 | Recovery | [/recovery](https://frontend-navy-eight-23.vercel.app/recovery) |
 | Ops review queue | [/support/review](https://frontend-navy-eight-23.vercel.app/support/review) |
 | Captain payout | [/captain/payout](https://frontend-navy-eight-23.vercel.app/captain/payout) |
@@ -137,17 +138,44 @@ The transport experience can be excellent while **payment remains the weakest li
 
 **Suggested demo flow:** See [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md) (~12 min walkthrough).
 
-### Live ride demo scenarios
+### Supported ride types
 
-On **[/ride/live](https://frontend-navy-eight-23.vercel.app/ride/live)**, use the playback controls at the bottom to step through three scripted fare states:
+Select **Bike**, **Auto**, or **Cab** on [/booking](https://frontend-navy-eight-23.vercel.app/booking). The same Assured Pay flow applies to all three; fare presets scale per category:
 
-| Scenario | Trust chip | What it shows |
-|----------|------------|---------------|
-| **Within approved max** | On track | Fare stays at estimate; calm timeline |
-| **Entered buffer zone** | Still covered | Valid waiting/route updates within M |
-| **Review required** | Review first | Fare above max; held for ops review, not auto-charged |
+| Category | Estimate (F) | Buffer | Approved max (M) |
+|----------|--------------|--------|------------------|
+| **Bike** | ₹42 | ₹7 | ₹49 |
+| **Auto** | ₹85 | ₹10 | ₹95 |
+| **Cab** | ₹145 | ₹15 | ₹160 |
 
-Use **Prev / Next** to advance steps within a scenario; switching scenarios resets to step 1.
+Your selection persists for live ride and post-ride completion screens.
+
+### Supported demo scenarios
+
+#### Live ride (during trip)
+
+On **[/ride/live](https://frontend-navy-eight-23.vercel.app/ride/live)**, use playback controls to step through:
+
+| # | Scenario | Trust chip | What it demonstrates |
+|---|----------|------------|----------------------|
+| **a** | **Within approved max** | On track | Fare stays at estimate; no extra charges |
+| **b** | **Entered buffer zone** | Still covered | Valid waiting/route updates within M |
+| **c** | **Review required** (suspicious path) | Review first | Fare above max; held for review, not auto-charged |
+
+Use **Prev / Next** to advance steps; switching scenarios resets to step 1. Works for Bike, Auto, and Cab.
+
+#### Post-ride completion (at trip end)
+
+Open directly via `?outcome=` or after live ride playback:
+
+| # | Scenario | URL param | Rider outcome | Captain outcome |
+|---|----------|-----------|---------------|-----------------|
+| **a** | **Within approved max** | `within_max` | Charged at final fare (A ≤ M) | Paid in full |
+| **b** | **Buffer zone · still within max** | `buffer_within_max` | Charged within M after valid buffer updates | Paid in full |
+| **c** | **Small valid excess · residual due** | `valid_overage` | M captured at trip end; small verified remainder due | Paid in full by assurance |
+| **d** | **Suspicious excess · under review** | `suspicious_overage` | M captured; excess held for ops review | Payout pending review |
+
+Legacy alias: `?outcome=happy_path` maps to **within approved max**.
 
 ---
 
@@ -241,7 +269,7 @@ API base path: **`/api`**. OpenAPI: [live docs](https://frontend-navy-eight-23.v
 |-------|------------|
 | Frontend | Next.js 14, React, TypeScript, Tailwind CSS |
 | Backend | FastAPI, Pydantic v2, Python 3.11+ |
-| Testing | pytest (151), Vitest (112), Playwright (9 E2E flows) |
+| Testing | pytest (151), Vitest (147), Playwright (9 E2E flows) |
 | CI | GitHub Actions — lint, unit tests, build, E2E |
 | Deploy | Vercel Services — Next.js at `/`, FastAPI at `/api` |
 
@@ -252,7 +280,7 @@ API base path: **`/api`**. OpenAPI: [live docs](https://frontend-navy-eight-23.v
 | Suite | Count | Scope |
 |-------|-------|-------|
 | Backend pytest | 151 | Domain policy, settlement, recovery, analytics, Grok guardrails |
-| Frontend Vitest | 112 | Components, contexts, live-ride scenario integration |
+| Frontend Vitest | 147 | Components, contexts, live-ride + completion scenario integration, ride categories |
 | Playwright E2E | 9 | Discovery, opt-in, live ride, overage, recovery, Grok fallback |
 
 ```powershell
@@ -307,21 +335,68 @@ Detailed guide: [`docs/LOCAL_SETUP.md`](docs/LOCAL_SETUP.md)
 |------|-------|
 | **Live URL** | https://frontend-navy-eight-23.vercel.app |
 | **Vercel project** | [parthkapoor2402s-projects/frontend](https://vercel.com/parthkapoor2402s-projects/frontend) |
-| **Config** | Root [`vercel.json`](vercel.json) — Services mode |
+| **Config** | Root [`vercel.json`](vercel.json) — Vercel Services (Next.js + FastAPI) |
+| **Region** | `bom1` (Mumbai) |
 
-**Environment variables (Vercel):**
+### Environment variables (Vercel)
 
-| Variable | Production value |
-|----------|------------------|
-| `NEXT_PUBLIC_API_URL` | `https://frontend-navy-eight-23.vercel.app/api` |
-| `NEXT_PUBLIC_DEMO_MODE` | `true` |
-| `CORS_ORIGINS` | `https://frontend-navy-eight-23.vercel.app` |
+Set these in **Project → Settings → Environment Variables** (Production + Preview):
 
-### Redeploy
+| Variable | Scope | Production value |
+|----------|-------|------------------|
+| `NEXT_PUBLIC_API_URL` | Frontend | `https://frontend-navy-eight-23.vercel.app/api` |
+| `NEXT_PUBLIC_DEMO_MODE` | Frontend | `true` |
+| `CORS_ORIGINS` | Backend | `https://frontend-navy-eight-23.vercel.app` |
+
+Optional (Grok copy assist — off by default):
+
+| Variable | Value |
+|----------|-------|
+| `GROK_API_KEY` | Your xAI API key |
+| `GROK_COPY_ENABLED` | `true` |
+
+Local dev copies: [`frontend/.env.example`](frontend/.env.example), [`backend/.env.example`](backend/.env.example).
+
+### Vercel deployment steps
+
+**First-time setup**
+
+1. Install Vercel CLI: `npm i -g vercel`
+2. Log in: `vercel login`
+3. Link the repo root (where `vercel.json` lives): `vercel link`
+4. Add environment variables above in the Vercel dashboard (or via CLI — see below).
+5. Deploy: `vercel deploy --prod`
+
+**Redeploy after a release commit**
 
 ```powershell
+# From repository root
+git push origin main
+
+# Or trigger deploy directly from CLI
 npx vercel deploy --prod --yes
 ```
+
+**Set env vars via CLI (optional)**
+
+```powershell
+vercel env add NEXT_PUBLIC_API_URL production
+# paste: https://frontend-navy-eight-23.vercel.app/api
+
+vercel env add NEXT_PUBLIC_DEMO_MODE production
+# paste: true
+
+vercel env add CORS_ORIGINS production
+# paste: https://frontend-navy-eight-23.vercel.app
+```
+
+**Verify after deploy**
+
+- App loads: `https://YOUR-APP.vercel.app/home`
+- API docs: `https://YOUR-APP.vercel.app/api/docs`
+- Booking shows Bike / Auto / Cab rows
+- Live ride playback: `/ride/live`
+- Completion scenarios: `/ride/completed?outcome=valid_overage`
 
 Pre-demo checklist: [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md)
 
@@ -350,6 +425,8 @@ Pre-demo checklist: [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md)
 | Demo persona switcher | OAuth / rider identity |
 | Seeded analytics events | Warehouse + BI pipeline |
 | Optional Grok copy assist | Production AI governance review |
+| Bike / Auto / Cab UI + category-scaled demo fares | Backend category param on all API routes |
+| Frontend mock fallback for non-bike live ride | Full API parity for Auto/Cab playback |
 
 **Status:** Demo-ready for stakeholder walkthroughs, user research, and technical due diligence. Not for live payment processing without further hardening and compliance review.
 

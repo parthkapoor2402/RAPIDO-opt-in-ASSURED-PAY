@@ -32,7 +32,7 @@ function ResidualDueInner() {
       <div className="space-y-4" data-testid="residual-due-page">
         <h1 className="text-xl font-bold text-rapido-black">No residual due</h1>
         <p className="text-sm text-rapido-grey">This ride has no remaining balance.</p>
-        <Link href="/ride/completed?outcome=happy_path">
+        <Link href="/ride/completed?outcome=within_max">
           <CTAButton variant="secondary" fullWidth>
             Back to receipt
           </CTAButton>

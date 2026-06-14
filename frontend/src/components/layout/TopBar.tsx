@@ -4,9 +4,11 @@ import Link from "next/link";
 
 import { StatusChip } from "@/components/ui/StatusChip";
 import { useDemoScenario } from "@/context/DemoScenarioContext";
+import { useSelectedRideCategory } from "@/features/assured-pay/context/AssuredPayBookingContext";
 
 export function TopBar() {
   const { scenario } = useDemoScenario();
+  const category = useSelectedRideCategory();
   const isRider = scenario.view === "rider";
 
   return (
@@ -20,7 +22,9 @@ export function TopBar() {
             rapido
           </Link>
           {isRider ? (
-            <p className="text-[11px] text-rapido-grey">Assured Pay · bike rides</p>
+            <p className="text-[11px] text-rapido-grey">
+              Assured Pay · {category.label.toLowerCase()} rides
+            </p>
           ) : (
             <p className="text-[11px] text-rapido-grey">Assured Pay · {scenario.view}</p>
           )}

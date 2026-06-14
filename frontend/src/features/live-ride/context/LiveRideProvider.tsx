@@ -64,6 +64,7 @@ export function LiveRideProvider({ children }: LiveRideProviderProps) {
         stepIndex,
         eligibility.F,
         optIn.enabled,
+        eligibility.buffer,
       );
       setProgress(payload);
       if ("timeline_title" in payload && payload.timeline_title) {
@@ -73,7 +74,7 @@ export function LiveRideProvider({ children }: LiveRideProviderProps) {
     } finally {
       setLoading(false);
     }
-  }, [scenarioId, stepIndex, eligibility.F, optIn.enabled]);
+  }, [scenarioId, stepIndex, eligibility.F, eligibility.buffer, optIn.enabled]);
 
   useEffect(() => {
     void listScenariosWithFallback().then(setScenarios);

@@ -8,84 +8,95 @@ import { TripReceiptCard } from "@/components/layout/TripReceiptCard";
 import { CTAButton } from "@/components/ui/CTAButton";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { StatusChip } from "@/components/ui/StatusChip";
+import { CompletionNextStepCard } from "@/features/settlement/components/CompletionNextStepCard";
 import { SettlementLedger } from "@/features/settlement/components/SettlementLedger";
 import { SettlementSummary } from "@/features/settlement/components/SettlementSummary";
+import { useSelectedRideCategory } from "@/features/assured-pay/context/AssuredPayBookingContext";
 import {
   SettlementProvider,
   useSettlement,
 } from "@/features/settlement/context/SettlementProvider";
+import { getCompletionCopy } from "@/features/settlement/lib/completion-copy";
+import { parseCompletionScenario } from "@/features/settlement/lib/completion-scenario";
 import { formatInr } from "@/features/settlement/lib/format";
-import type { SettlementFlowOutcome } from "@/features/settlement/types";
-
-function parseOutcome(value: string | null): SettlementFlowOutcome {
-  if (value === "valid_overage" || value === "suspicious_overage") {
-    return value;
-  }
-  return "happy_path";
-}
+import type { CompletionScenarioId } from "@/features/settlement/types";
 
 function RideCompletedInner() {
-  const { settlement, loading } = useSettlement();
+  const { settlement, scenario, loading } = useSettlement();
+  const category = useSelectedRideCategory();
 
   if (loading || !settlement) {
     return <LoadingState label="Settling ride…" />;
   }
 
-  const isReview = settlement.flow_outcome === "suspicious_overage";
-  const hasDue = settlement.residual_due != null;
+  const copy = getCompletionCopy(scenario, {
+    charged: settlement.rider_charged,
+    residual: settlement.residual_due?.amount_inr,
+    underReview: settlement.amount_under_review,
+  });
+
+  const reasonLine =
+    settlement.residual_due?.reason_label ??
+    (scenario === "buffer_within_max" ? "2 min waiting" : undefined);
 
   return (
-    <div className="space-y-5" data-testid="ride-completed-page">
+    <div
+      className="space-y-5"
+      data-testid="ride-completed-page"
+      data-completion-scenario={scenario}
+    >
       <div className="text-center">
-        <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-brand-600 text-3xl font-bold text-rapido-black">
-          {isReview ? "!" : "✓"}
+        <div
+          className={`mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full text-3xl font-bold ${
+            copy.heroIcon === "!"
+              ? "bg-rapido-tint text-rapido-navy"
+              : "bg-brand-600 text-rapido-black"
+          }`}
+        >
+          {copy.heroIcon}
         </div>
-        <h1 className="text-xl font-bold text-rapido-black">
-          {isReview ? "Ride completed · under review" : "Ride completed"}
-        </h1>
-        <p className="mt-1 text-sm text-rapido-grey">
-          {isReview
-            ? "Payment held while ops reviews the fare"
-            : hasDue
-              ? "Approved max charged · residual due created"
-              : "Payment settled · you're good to go"}
-        </p>
+        <h1 className="text-xl font-bold text-rapido-black">{copy.title}</h1>
+        <p className="mt-1 text-sm text-rapido-grey">{copy.subtitle}</p>
       </div>
 
-      <StatusChip label="Assured Pay used" tone="brand" />
+      <div className="flex flex-wrap items-center gap-2">
+        <StatusChip label="Assured Pay used" tone="brand" />
+        <span data-testid="completion-category-chip">
+          <StatusChip label={`${category.icon} ${category.label}`} tone="neutral" />
+        </span>
+        <StatusChip label={copy.statusChip} tone={copy.statusTone} />
+      </div>
 
       <TripReceiptCard
         estimate={formatInr(settlement.estimate_f)}
         approvedMax={formatInr(settlement.approved_m)}
         finalFare={formatInr(settlement.actual_a)}
         charged={formatInr(settlement.rider_charged)}
-        reasonLine={
-          settlement.residual_due?.reason_label ??
-          (settlement.actual_a > settlement.estimate_f ? "Fare updated in ride" : undefined)
-        }
+        reasonLine={reasonLine}
         captainPaidAmount={formatInr(settlement.payout.amount_inr)}
-        captainPaidLabel={settlement.payout.status_label}
+        captainPaidLabel={copy.captainPayoutLabel}
       />
 
-      <SettlementSummary settlement={settlement} />
+      <SettlementSummary settlement={settlement} dueChipLabel={copy.summaryDueChip} />
+      <CompletionNextStepCard copy={copy} />
       <SettlementLedger events={settlement.ledger} />
 
-      {hasDue ? (
+      {copy.showPayCta && settlement.residual_due && copy.payCtaLabel ? (
         <Link href="/ride/residual-due?outcome=valid_overage">
-          <CTAButton fullWidth>Pay remaining {formatInr(settlement.residual_due!.amount_inr)}</CTAButton>
+          <CTAButton fullWidth>{copy.payCtaLabel}</CTAButton>
         </Link>
       ) : (
         <CTAButton variant="secondary" fullWidth>
-          View ride history
+          {copy.secondaryCtaLabel}
         </CTAButton>
       )}
     </div>
   );
 }
 
-function RideCompletedWithOutcome({ outcome }: { outcome: SettlementFlowOutcome }) {
+function RideCompletedWithScenario({ scenario }: { scenario: CompletionScenarioId }) {
   return (
-    <SettlementProvider initialOutcome={outcome} autoRun>
+    <SettlementProvider initialScenario={scenario} autoRun>
       <RideCompletedInner />
     </SettlementProvider>
   );
@@ -93,8 +104,8 @@ function RideCompletedWithOutcome({ outcome }: { outcome: SettlementFlowOutcome 
 
 function RideCompletedFromQuery() {
   const params = useSearchParams();
-  const outcome = parseOutcome(params.get("outcome"));
-  return <RideCompletedWithOutcome outcome={outcome} />;
+  const scenario = parseCompletionScenario(params.get("outcome"));
+  return <RideCompletedWithScenario scenario={scenario} />;
 }
 
 export function RideCompletedPageContent() {
@@ -106,9 +117,19 @@ export function RideCompletedPageContent() {
 }
 
 export function RideCompletedPageContentForOutcome({
-  outcome = "happy_path",
+  outcome = "within_max",
 }: {
-  outcome?: SettlementFlowOutcome;
+  outcome?: CompletionScenarioId | "happy_path";
 }) {
-  return <RideCompletedWithOutcome outcome={outcome} />;
+  const scenario = outcome === "happy_path" ? "within_max" : outcome;
+  return <RideCompletedWithScenario scenario={scenario} />;
+}
+
+/** @deprecated Alias for tests using flow outcome names */
+export function RideCompletedPageContentForScenario({
+  scenario,
+}: {
+  scenario: CompletionScenarioId;
+}) {
+  return <RideCompletedWithScenario scenario={scenario} />;
 }

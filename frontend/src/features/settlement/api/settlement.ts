@@ -1,7 +1,7 @@
 import { API_PREFIX, apiUrl } from "@/lib/api";
 
 import { buildMockSettlement } from "@/features/settlement/mock/settlement-mock";
-import type { SettlementExecuteInput, SettlementFlowOutcome, SettlementPayload } from "@/features/settlement/types";
+import type { CompletionScenarioId, SettlementExecuteInput, SettlementPayload } from "@/features/settlement/types";
 
 export async function executeSettlement(input: SettlementExecuteInput): Promise<SettlementPayload> {
   const response = await fetch(apiUrl(`${API_PREFIX}/settlement/execute`), {
@@ -26,12 +26,13 @@ export async function fetchSettlementByRide(rideId: string): Promise<SettlementP
 }
 
 export async function executeSettlementWithFallback(
-  outcome: SettlementFlowOutcome,
+  scenario: CompletionScenarioId,
   input: SettlementExecuteInput,
 ): Promise<SettlementPayload> {
   try {
-    return await executeSettlement(input);
+    const result = await executeSettlement(input);
+    return { ...result, completion_scenario: scenario };
   } catch {
-    return buildMockSettlement(outcome);
+    return buildMockSettlement(scenario);
   }
 }

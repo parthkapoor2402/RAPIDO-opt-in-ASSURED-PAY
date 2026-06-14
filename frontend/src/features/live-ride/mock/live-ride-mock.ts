@@ -1,9 +1,10 @@
 import { computeApprovedMax, formatInr } from "@/features/assured-pay/lib/fare";
+import { BIKE_DEMO_BASE, getLiveRideStepFare } from "@/features/assured-pay/lib/scenario-fare-engine";
 import { mapFareStateToTrustState } from "@/features/live-ride/lib/trust-state";
 import type { RideProgressPayload, RideScenarioSummary } from "@/features/live-ride/types";
 
-const DEFAULT_F = 42;
-const DEFAULT_BUFFER = 7;
+const DEFAULT_F = BIKE_DEMO_BASE.F;
+const DEFAULT_BUFFER = BIKE_DEMO_BASE.buffer;
 
 export const DEMO_SCENARIOS: RideScenarioSummary[] = [
   {
@@ -27,7 +28,6 @@ export const DEMO_SCENARIOS: RideScenarioSummary[] = [
 ];
 
 interface MockStep {
-  current_fare: number;
   reason_codes: string[];
   timeline_title: string;
   timeline_subtitle: string;
@@ -36,19 +36,16 @@ interface MockStep {
 const MOCK_STEPS: Record<string, MockStep[]> = {
   within_max: [
     {
-      current_fare: 42,
       reason_codes: [],
       timeline_title: "En route",
       timeline_subtitle: "No fare change · on track to Indiranagar",
     },
     {
-      current_fare: 42,
       reason_codes: [],
       timeline_title: "Mid-trip",
       timeline_subtitle: "Still at estimate · no extra charges",
     },
     {
-      current_fare: 42,
       reason_codes: [],
       timeline_title: "Approaching drop",
       timeline_subtitle: "Still at estimate · well within your approved max",
@@ -56,39 +53,33 @@ const MOCK_STEPS: Record<string, MockStep[]> = {
   ],
   buffer_zone: [
     {
-      current_fare: 42,
       reason_codes: [],
       timeline_title: "Pickup complete",
       timeline_subtitle: "Trip started · Koramangala 5th Block",
     },
     {
-      current_fare: 46,
       reason_codes: ["waiting_after_arrival"],
       timeline_title: "2 min waiting added",
-      timeline_subtitle: "Signal hold · +₹4 valid waiting charge",
+      timeline_subtitle: "Signal hold · valid waiting charge applied",
     },
     {
-      current_fare: 48,
       reason_codes: ["waiting_after_arrival", "rider_requested_route_change"],
       timeline_title: "Route adjustment applied",
-      timeline_subtitle: "Detour via 100 ft Rd · still covered under ₹49 max",
+      timeline_subtitle: "Detour applied · still covered under your max",
     },
   ],
   exceeds_review: [
     {
-      current_fare: 42,
       reason_codes: [],
       timeline_title: "Pickup complete",
       timeline_subtitle: "Trip started · Koramangala 5th Block",
     },
     {
-      current_fare: 49,
       reason_codes: ["waiting_after_arrival"],
       timeline_title: "Reached approved max",
-      timeline_subtitle: "Waiting at drop · ₹49 (your approved ceiling)",
+      timeline_subtitle: "Waiting at drop · at your approved ceiling",
     },
     {
-      current_fare: 52,
       reason_codes: [],
       timeline_title: "Fare above max",
       timeline_subtitle: "Unusual extension · we review before any extra charge",
@@ -141,27 +132,29 @@ function buildReasonUpdates(
 export function buildMockRideProgress(
   scenarioId: string,
   stepIndex: number,
-  estimateF = DEFAULT_F,
+  estimateF: number = DEFAULT_F,
   assuredPayActive = true,
+  buffer: number = DEFAULT_BUFFER,
 ): RideProgressPayload & { timeline_title: string; timeline_subtitle: string } {
   const steps = MOCK_STEPS[scenarioId] ?? MOCK_STEPS.within_max;
   const step = steps[Math.min(stepIndex, steps.length - 1)];
-  const buffer = DEFAULT_BUFFER;
+  const currentFare = getLiveRideStepFare(scenarioId, stepIndex, estimateF, buffer);
   const approvedM = computeApprovedMax(estimateF, buffer);
-  const fareState = classifyFareState(step.current_fare, estimateF, approvedM);
-  const requiresReview = mockRequiresReview(step.current_fare, approvedM, step.reason_codes);
+
+  const fareState = classifyFareState(currentFare, estimateF, approvedM);
+  const requiresReview = mockRequiresReview(currentFare, approvedM, step.reason_codes);
 
   return {
     estimate_f: estimateF,
     approved_m: approvedM,
     buffer,
-    current_fare: step.current_fare,
+    current_fare: currentFare,
     fare_state: fareState,
     trust_state: mapFareStateToTrustState(fareState, requiresReview),
-    residual_due_if_ended_now: Math.max(0, step.current_fare - approvedM),
+    residual_due_if_ended_now: Math.max(0, currentFare - approvedM),
     requires_review_if_ended_now: requiresReview,
     assured_pay_active: assuredPayActive,
-    reason_updates: buildReasonUpdates(estimateF, step.current_fare, step.reason_codes),
+    reason_updates: buildReasonUpdates(estimateF, currentFare, step.reason_codes),
     latest_reason_code: step.reason_codes.at(-1) ?? null,
     policy_version: "0.1.0-mock",
     timeline_title: step.timeline_title,

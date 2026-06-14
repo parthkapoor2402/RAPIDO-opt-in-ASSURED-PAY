@@ -41,7 +41,7 @@ const ROUTE_CASES: Array<{
     Component: HomePageContent,
     withDiscovery: true,
     assert: (ui) => {
-      expect(ui.getByRole("button", { name: /book bike with assured pay/i })).toBeInTheDocument();
+      expect(ui.getByRole("button", { name: /book a ride with assured pay/i })).toBeInTheDocument();
     },
   },
   {
