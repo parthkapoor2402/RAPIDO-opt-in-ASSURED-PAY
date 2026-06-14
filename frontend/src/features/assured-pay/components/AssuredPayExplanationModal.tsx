@@ -10,7 +10,7 @@ interface AssuredPayExplanationModalProps {
 
 export function AssuredPayExplanationModal({ open, onClose }: AssuredPayExplanationModalProps) {
   return (
-    <Modal open={open} title="What Assured Pay covers" onClose={onClose}>
+    <Modal open={open} title="How Assured Pay works" onClose={onClose}>
       <div className="space-y-4" data-testid="assured-pay-explanation-modal">
         <p className="text-sm text-rapido-grey">{TRUST_COPY.riderLead}</p>
 

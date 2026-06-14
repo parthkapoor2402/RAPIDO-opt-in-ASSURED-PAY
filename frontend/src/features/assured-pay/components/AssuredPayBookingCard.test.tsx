@@ -22,8 +22,8 @@ const eligibleFixture: AssuredPayEligibility = {
     {
       id: "low_battery",
       show: true,
-      headline: "Low battery?",
-      subline: "Turn on Assured Pay for a frictionless drop-off.",
+      headline: "Heading out with low battery?",
+      subline: "Lock your max now and checkout more easily at drop-off.",
       priority: 1,
     },
   ],
@@ -43,7 +43,7 @@ describe("DiscoveryPromptBanner", () => {
 
   it("renders contextual headline when prompt provided", () => {
     render(<DiscoveryPromptBanner prompt={prompt} />);
-    expect(screen.getByTestId("discovery-prompt-low_battery")).toHaveTextContent("Low battery?");
+    expect(screen.getByTestId("discovery-prompt-low_battery")).toHaveTextContent("low battery");
   });
 
   it("renders nothing when prompt is null", () => {
@@ -69,7 +69,7 @@ describe("AssuredPayExplanationModal", () => {
     render(<AssuredPayExplanationModal open onClose={vi.fn()} />);
     expect(screen.getByTestId("assured-pay-explanation-modal")).toHaveTextContent("Covers");
     expect(screen.getByTestId("assured-pay-explanation-modal")).toHaveTextContent("Does not cover");
-    expect(screen.getByText(/Weak network at drop-off/i)).toBeInTheDocument();
+    expect(screen.getByText(/Approved max set upfront at booking/i)).toBeInTheDocument();
   });
 });
 
@@ -113,7 +113,7 @@ describe("AssuredPayBookingCard", () => {
         onOpenOptIn={vi.fn()}
       />,
     );
-    expect(screen.getByTestId("assured-pay-enabled-banner")).toHaveTextContent(/captain payout guaranteed/i);
+    expect(screen.getByTestId("assured-pay-enabled-banner")).toHaveTextContent(/approved max locked/i);
     expect(screen.queryByTestId("assured-pay-opt-in-cta")).not.toBeInTheDocument();
   });
 });

@@ -15,20 +15,20 @@ import { AssuredPayExplanationModal } from "@/features/assured-pay/components/As
 import { DiscoveryPromptBanner } from "@/features/assured-pay/components/DiscoveryPromptBanner";
 import { FreeTrialBadge } from "@/features/assured-pay/components/FreeTrialBadge";
 import { useAssuredPayBooking } from "@/features/assured-pay/context/AssuredPayBookingContext";
-import { TRUST_COPY } from "@/features/assured-pay/lib/copy";
+import { OPT_IN_SHEET, TRUST_COPY } from "@/features/assured-pay/lib/copy";
 import { CTAButton } from "@/components/ui/CTAButton";
 import { cn } from "@/lib/utils";
 
 const COVERAGE_OPTIONS = [
   {
     id: "standard",
-    title: "Enable Assured Pay",
-    subtitle: "Pay up to approved max · captain paid instantly",
+    title: OPT_IN_SHEET.enableTitle,
+    subtitle: OPT_IN_SHEET.enableSubtitle,
   },
   {
     id: "skip",
-    title: "Continue without protection",
-    subtitle: "Standard checkout at trip end",
+    title: OPT_IN_SHEET.standardTitle,
+    subtitle: OPT_IN_SHEET.standardSubtitle,
   },
 ] as const;
 
@@ -84,10 +84,8 @@ export function AssuredPayPageContent() {
       <BottomSheetPanel overlay className="space-y-4">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h1 className="text-lg font-bold text-rapido-black">Add Assured Pay</h1>
-            <p className="text-sm text-rapido-grey">
-              Know your max upfront. Finish without checkout stress at drop-off.
-            </p>
+            <h1 className="text-lg font-bold text-rapido-black">{OPT_IN_SHEET.title}</h1>
+            <p className="text-sm text-rapido-grey">{OPT_IN_SHEET.subtitle}</p>
           </div>
           <FreeTrialBadge show={eligibility.freeTrialAvailable} />
         </div>

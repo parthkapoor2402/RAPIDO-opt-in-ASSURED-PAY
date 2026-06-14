@@ -32,8 +32,8 @@ export function resolveDiscoveryPrompts(
     prompts.push({
       id: "booking_card",
       show: true,
-      headline: "Finish without payment stress",
-      subline: "Guaranteed digital completion up to your approved max.",
+      headline: "Smoother checkout at drop-off",
+      subline: "Lock in an approved max and finish digitally with less friction.",
       priority: 10,
     });
   }
@@ -42,8 +42,8 @@ export function resolveDiscoveryPrompts(
     prompts.push({
       id: "free_trial",
       show: true,
-      headline: "First assured bike ride free",
-      subline: "Try Assured Pay on this ride — protection at no extra charge.",
+      headline: "First assured ride free",
+      subline: "Try Assured Pay on this ride — convenience at no extra charge.",
       priority: 5,
     });
   }
@@ -52,8 +52,8 @@ export function resolveDiscoveryPrompts(
     prompts.push({
       id: "low_battery",
       show: true,
-      headline: "Low battery?",
-      subline: "Turn on Assured Pay for a frictionless drop-off.",
+      headline: "Heading out with low battery?",
+      subline: "Lock your max now and checkout more easily at drop-off.",
       priority: 1,
     });
   }
@@ -62,8 +62,8 @@ export function resolveDiscoveryPrompts(
     prompts.push({
       id: "online_payer",
       show: true,
-      headline: "Prefer digital payment?",
-      subline: "Assured Pay covers weak network and payment failures at drop-off.",
+      headline: "Prefer paying digitally?",
+      subline: "Assured Pay gives you an upfront max and smoother UPI checkout at drop-off.",
       priority: 2,
     });
   } else if (
@@ -73,8 +73,8 @@ export function resolveDiscoveryPrompts(
     prompts.push({
       id: "online_payer",
       show: true,
-      headline: "Finish your ride without payment stress",
-      subline: "You often pay digitally — Assured Pay has your back at drop-off.",
+      headline: "You often pay digitally",
+      subline: "Get an upfront approved max and a smoother checkout when you arrive.",
       priority: 3,
     });
   }
@@ -83,8 +83,8 @@ export function resolveDiscoveryPrompts(
     prompts.push({
       id: "post_failure",
       show: true,
-      headline: "Avoid payment hassle next time",
-      subline: "Your last ride had a payment issue — Assured Pay prevents a repeat.",
+      headline: "Smoother checkout next time",
+      subline: "Last checkout was slow? Assured Pay locks your max upfront for an easier drop-off.",
       priority: 1,
     });
   }

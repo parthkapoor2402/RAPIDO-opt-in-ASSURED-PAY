@@ -1,22 +1,31 @@
-export const ASSURED_PAY_TAGLINE = "No-payment-stress ride completion";
+export const ASSURED_PAY_TAGLINE = "Upfront max · smoother checkout";
 
 export const TRUST_COPY = {
   riderLead:
-    "Finish your ride without last-mile checkout stress — even if your phone battery is low or network drops at drop-off.",
+    "Lock in your approved max at booking and enjoy smoother digital checkout at drop-off.",
   captainFairness:
-    "Your captain gets paid instantly up to the approved max. You are never asked to pay cash because digital payment failed.",
+    "Captain gets paid instantly up to your approved max — a smoother finish for both of you.",
   optInConfirm:
-    "Captain payout guaranteed. You won't need cash if payment hiccups at drop-off.",
+    "Assured Pay is on. Approved max locked · smoother checkout at drop-off.",
   fareTransparency:
     "Your approved max includes a small buffer for valid fare changes like waiting time or route updates.",
 } as const;
 
+export const OPT_IN_SHEET = {
+  title: "Add Assured Pay",
+  subtitle: "Know your max upfront. Smoother digital checkout at drop-off.",
+  enableTitle: "Use Assured Pay",
+  enableSubtitle: "Approved max upfront · captain paid instantly",
+  standardTitle: "Standard checkout",
+  standardSubtitle: "Pay at trip end — your usual Rapido ride",
+} as const;
+
 export const COVERAGE = {
   covers: [
-    "Weak network at drop-off",
-    "Phone battery dies before payment",
-    "Digital payment fails at trip end",
+    "Approved max set upfront at booking",
+    "Smoother digital checkout at drop-off",
     "Captain paid instantly up to approved max",
+    "Clear cap when valid waiting or route updates apply",
   ],
   doesNotCover: [
     "Cash-only rides without a saved payment method",
