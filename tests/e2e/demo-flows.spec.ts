@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { enableAssuredPay, switchDemoScenario } from "./helpers/demo";
+import { enableAssuredPay, selectBookingDestination, switchDemoScenario } from "./helpers/demo";
 
 test.describe("App shell smoke", () => {
   test("home and bottom nav load", async ({ page }) => {
@@ -20,9 +20,11 @@ test.describe("App shell smoke", () => {
 test.describe("Assured Pay demo flows", () => {
   test("discovery from booking", async ({ page }) => {
     await page.goto("/booking");
+    await selectBookingDestination(page);
     await expect(page.getByTestId("assured-pay-booking-card")).toBeVisible();
     await expect(page.getByTestId("assured-pay-opt-in-cta")).toBeVisible();
     await expect(page.getByTestId("assured-pay-fare-card")).toBeVisible();
+    await expect(page.getByTestId("vehicle-map-markers")).toBeVisible();
   });
 
   test("opt-in flow", async ({ page }) => {
@@ -57,6 +59,7 @@ test.describe("Assured Pay demo flows", () => {
     await page.goto("/home");
     await expect(page.getByTestId("recovery-banner")).toBeVisible({ timeout: 15_000 });
     await page.goto("/booking");
+    await selectBookingDestination(page);
     await expect(page.getByTestId("assured-pay-blocked")).toBeVisible();
     await page.goto("/recovery");
     await expect(page.getByTestId("recovery-page")).toBeVisible();

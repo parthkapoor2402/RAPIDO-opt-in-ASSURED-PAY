@@ -8,6 +8,7 @@ import { RecoveryPageContentForTest } from "@/components/pages/RecoveryPageConte
 import { SupportReviewPageContent } from "@/components/pages/SupportReviewPageContent";
 import { DemoScenarioProvider } from "@/context/DemoScenarioContext";
 import { AssuredPayBookingProvider } from "@/features/assured-pay/context/AssuredPayBookingContext";
+import { BookingFlowProvider } from "@/features/booking/context/BookingFlowProvider";
 import { LiveRideProvider } from "@/features/live-ride/context/LiveRideProvider";
 import { RecoveryProvider } from "@/features/recovery/context/RecoveryProvider";
 import { MOCK_RECOVERY_WITH_DUE, MOCK_REPEAT_UNPAID } from "@/features/recovery/mock/recovery-mock";
@@ -53,7 +54,9 @@ function withProviders(children: ReactNode, scenarioId = "rider_commuter") {
     <DemoScenarioProvider initialScenarioId={scenarioId}>
       <RecoveryProvider>
         <AssuredPayBookingProvider>
-          <LiveRideProvider>{children}</LiveRideProvider>
+          <BookingFlowProvider>
+            <LiveRideProvider>{children}</LiveRideProvider>
+          </BookingFlowProvider>
         </AssuredPayBookingProvider>
       </RecoveryProvider>
     </DemoScenarioProvider>
@@ -107,7 +110,9 @@ describe("recovery flow integration", () => {
 
   it("restricted rebooking shows assured pay blocked with standard ride note", async () => {
     vi.mocked(recoveryApi.fetchRecoveryStateWithFallback).mockResolvedValue(MOCK_REPEAT_UNPAID);
+    const user = userEvent.setup();
     render(withProviders(<BookingPageContent />, "rider_blocked"));
+    await user.click(screen.getByTestId("destination-suggestion-indiranagar"));
     await waitFor(() => {
       expect(screen.getByTestId("assured-pay-blocked")).toBeInTheDocument();
     });

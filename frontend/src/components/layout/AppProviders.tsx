@@ -3,6 +3,7 @@
 import { AppShell } from "@/components/layout/AppShell";
 import { DemoScenarioProvider } from "@/context/DemoScenarioContext";
 import { AssuredPayBookingProvider } from "@/features/assured-pay/context/AssuredPayBookingContext";
+import { BookingFlowProvider } from "@/features/booking/context/BookingFlowProvider";
 import { LiveRideProvider } from "@/features/live-ride/context/LiveRideProvider";
 import { RecoveryProvider } from "@/features/recovery/context/RecoveryProvider";
 import type { ReactNode } from "react";
@@ -16,7 +17,9 @@ export function AppProviders({ children }: AppProvidersProps) {
     <DemoScenarioProvider>
       <RecoveryProvider>
         <AssuredPayBookingProvider>
-          <LiveRideProvider>{children}</LiveRideProvider>
+          <BookingFlowProvider>
+            <LiveRideProvider>{children}</LiveRideProvider>
+          </BookingFlowProvider>
         </AssuredPayBookingProvider>
       </RecoveryProvider>
     </DemoScenarioProvider>

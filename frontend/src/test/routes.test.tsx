@@ -13,6 +13,7 @@ import { ResidualDuePageContentForTest } from "@/components/pages/ResidualDuePag
 import { SupportReviewPageContent } from "@/components/pages/SupportReviewPageContent";
 import { DemoScenarioProvider } from "@/context/DemoScenarioContext";
 import { AssuredPayBookingProvider } from "@/features/assured-pay/context/AssuredPayBookingContext";
+import { BookingFlowProvider } from "@/features/booking/context/BookingFlowProvider";
 import { LiveRideProvider } from "@/features/live-ride/context/LiveRideProvider";
 import { RecoveryProvider } from "@/features/recovery/context/RecoveryProvider";
 import type { ComponentType, ReactNode } from "react";
@@ -22,7 +23,9 @@ function withDiscoveryProviders(children: ReactNode) {
     <DemoScenarioProvider>
       <RecoveryProvider>
         <AssuredPayBookingProvider>
-          <LiveRideProvider>{children}</LiveRideProvider>
+          <BookingFlowProvider>
+            <LiveRideProvider>{children}</LiveRideProvider>
+          </BookingFlowProvider>
         </AssuredPayBookingProvider>
       </RecoveryProvider>
     </DemoScenarioProvider>
@@ -41,7 +44,8 @@ const ROUTE_CASES: Array<{
     Component: HomePageContent,
     withDiscovery: true,
     assert: (ui) => {
-      expect(ui.getByRole("button", { name: /book a ride with assured pay/i })).toBeInTheDocument();
+      expect(ui.getByRole("button", { name: /plan your ride/i })).toBeInTheDocument();
+      expect(ui.getByTestId("home-destination-search")).toBeInTheDocument();
     },
   },
   {
@@ -49,8 +53,8 @@ const ROUTE_CASES: Array<{
     Component: BookingPageContent,
     withDiscovery: true,
     assert: (ui) => {
-      expect(ui.getByTestId("assured-pay-booking-card")).toBeInTheDocument();
-      expect(ui.getByRole("button", { name: /book bike/i })).toBeInTheDocument();
+      expect(ui.getByTestId("destination-search-panel")).toBeInTheDocument();
+      expect(ui.getByTestId("book-ride-cta")).toBeDisabled();
     },
   },
   {

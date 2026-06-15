@@ -9,6 +9,7 @@ import {
   AssuredPayBookingProvider,
   useAssuredPayBooking,
 } from "@/features/assured-pay/context/AssuredPayBookingContext";
+import { BookingFlowProvider } from "@/features/booking/context/BookingFlowProvider";
 import { getCategoryFare } from "@/features/assured-pay/lib/ride-categories";
 import type { RideCategoryId } from "@/features/assured-pay/lib/ride-categories";
 import { LiveRideProvider } from "@/features/live-ride/context/LiveRideProvider";
@@ -26,11 +27,20 @@ function renderBooking() {
   return render(
     <DemoScenarioProvider initialScenarioId="rider_commuter">
       <AssuredPayBookingProvider>
-        <CategoryProbe />
-        <BookingPageContent />
+        <BookingFlowProvider>
+          <CategoryProbe />
+          <BookingPageContent />
+        </BookingFlowProvider>
       </AssuredPayBookingProvider>
     </DemoScenarioProvider>,
   );
+}
+
+async function selectBookingDestination(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByTestId("destination-suggestion-indiranagar"));
+  await waitFor(() => {
+    expect(screen.getByTestId("ride-category-list")).toBeInTheDocument();
+  });
 }
 
 function renderLiveRide(category: RideCategoryId) {
@@ -38,9 +48,11 @@ function renderLiveRide(category: RideCategoryId) {
   return render(
     <DemoScenarioProvider initialScenarioId="rider_commuter">
       <AssuredPayBookingProvider>
-        <LiveRideProvider>
-          <RideLivePageContent />
-        </LiveRideProvider>
+        <BookingFlowProvider>
+          <LiveRideProvider>
+            <RideLivePageContent />
+          </LiveRideProvider>
+        </BookingFlowProvider>
       </AssuredPayBookingProvider>
     </DemoScenarioProvider>,
   );
@@ -57,8 +69,10 @@ describe("ride category demo flows", () => {
     sessionStorage.clear();
   });
 
-  it("renders all three category rows on booking", () => {
+  it("renders all three category rows on booking", async () => {
+    const user = userEvent.setup();
     renderBooking();
+    await selectBookingDestination(user);
     expect(screen.getByTestId("ride-category-list")).toBeInTheDocument();
     expect(screen.getByTestId("ride-option-bike")).toBeInTheDocument();
     expect(screen.getByTestId("ride-option-auto")).toBeInTheDocument();
@@ -73,6 +87,7 @@ describe("ride category demo flows", () => {
   ])("switching to %s updates fare ceiling", async (category, F, M) => {
     const user = userEvent.setup();
     renderBooking();
+    await selectBookingDestination(user);
 
     await user.click(screen.getByTestId(`ride-option-${category}`));
     await waitFor(() => {
@@ -102,9 +117,11 @@ describe("ride category demo flows", () => {
     render(
       <DemoScenarioProvider initialScenarioId="rider_commuter">
         <AssuredPayBookingProvider>
-          <LiveRideProvider>
-            <RideLivePageContent />
-          </LiveRideProvider>
+          <BookingFlowProvider>
+            <LiveRideProvider>
+              <RideLivePageContent />
+            </LiveRideProvider>
+          </BookingFlowProvider>
         </AssuredPayBookingProvider>
       </DemoScenarioProvider>,
     );
@@ -131,6 +148,7 @@ describe("ride category demo flows", () => {
   it("shows bike trial promo only when bike is selected", async () => {
     const user = userEvent.setup();
     renderBooking();
+    await selectBookingDestination(user);
 
     expect(screen.getByTestId("free-trial-badge")).toBeInTheDocument();
     expect(screen.getByTestId("assured-pay-promo-strip")).toBeInTheDocument();
