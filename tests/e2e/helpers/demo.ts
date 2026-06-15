@@ -10,11 +10,7 @@ export async function switchDemoScenario(page: Page, label: string): Promise<voi
 /** Complete Assured Pay opt-in on the dedicated sheet. */
 export async function enableAssuredPay(page: Page): Promise<void> {
   await page.goto("/booking/assured-pay");
-  await page
-    .locator("li")
-    .filter({ hasText: "Enable Assured Pay" })
-    .getByRole("button")
-    .click();
+  await page.getByRole("button", { name: /Use Assured Pay/i }).click();
   const confirm = page.getByTestId("confirm-assured-pay-cta");
   await expect(confirm).toBeEnabled();
   await confirm.click();
