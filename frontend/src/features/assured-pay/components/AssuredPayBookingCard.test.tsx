@@ -30,11 +30,17 @@ const eligibleFixture: AssuredPayEligibility = {
 };
 
 describe("AssuredPayFareCard", () => {
-  it("renders F, buffer, and M amounts", () => {
+  it("renders primary fare and conditional max in booking variant", () => {
+    render(<AssuredPayFareCard estimateF={42} buffer={7} approvedMax={49} variant="booking" />);
+    expect(screen.getByTestId("assured-pay-primary-fare")).toHaveTextContent("₹42");
+    expect(screen.getByTestId("assured-pay-primary-fare")).toHaveTextContent("Your fare");
+    expect(screen.getByTestId("assured-pay-fare-card")).toHaveTextContent("View fare limit details");
+  });
+
+  it("renders full fare breakdown in default variant", () => {
     render(<AssuredPayFareCard estimateF={42} buffer={7} approvedMax={49} />);
     expect(screen.getByTestId("assured-pay-fare-card")).toHaveTextContent("₹42");
     expect(screen.getByTestId("assured-pay-fare-card")).toHaveTextContent("₹49");
-    expect(screen.getByTestId("assured-pay-fare-card")).toHaveTextContent("Valid fare changes");
   });
 });
 
@@ -97,8 +103,11 @@ describe("AssuredPayBookingCard", () => {
       />,
     );
 
-    expect(screen.getByTestId("assured-pay-opt-in-cta")).toBeInTheDocument();
-    expect(screen.getByTestId("free-trial-badge")).toBeInTheDocument();
+    expect(screen.getByTestId("assured-pay-module-headline")).toHaveTextContent(/smoother checkout/i);
+    expect(screen.getByTestId("assured-pay-module-helper")).toHaveTextContent(/not the max/i);
+    expect(screen.getByTestId("assured-pay-fare-clarity")).toBeInTheDocument();
+    expect(screen.getByTestId("assured-pay-opt-in-cta")).toHaveTextContent(/Try free/i);
+    expect(screen.getByTestId("assured-pay-incentive")).toBeInTheDocument();
 
     await user.click(screen.getByTestId("learn-more-assured-pay"));
     expect(screen.getByTestId("assured-pay-explanation-modal")).toBeInTheDocument();
@@ -113,7 +122,7 @@ describe("AssuredPayBookingCard", () => {
         onOpenOptIn={vi.fn()}
       />,
     );
-    expect(screen.getByTestId("assured-pay-enabled-banner")).toHaveTextContent(/approved max locked/i);
+    expect(screen.getByTestId("assured-pay-enabled-banner")).toHaveTextContent(/smoother checkout/i);
     expect(screen.queryByTestId("assured-pay-opt-in-cta")).not.toBeInTheDocument();
   });
 });

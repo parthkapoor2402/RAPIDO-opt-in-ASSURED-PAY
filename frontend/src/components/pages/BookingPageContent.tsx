@@ -10,6 +10,7 @@ import { StickyActionBar } from "@/components/layout/StickyActionBar";
 import { AssuredPayBookingCard } from "@/features/assured-pay/components/AssuredPayBookingCard";
 import { useAssuredPayBooking } from "@/features/assured-pay/context/AssuredPayBookingContext";
 import { RIDE_CATEGORIES } from "@/features/assured-pay/lib/ride-categories";
+import { BOOKING_RIDE_CARD } from "@/features/assured-pay/lib/copy";
 import { formatInr } from "@/features/assured-pay/lib/fare";
 import { CTAButton } from "@/components/ui/CTAButton";
 
@@ -59,7 +60,9 @@ export function BookingPageContent() {
               icon={item.icon}
               capacity={item.capacity}
               price={formatInr(item.estimateF)}
-              meta={`${item.etaLabel} · Max ${formatInr(item.estimateF + item.buffer)} with Assured Pay`}
+              meta={item.etaLabel}
+              assuredPayHint={BOOKING_RIDE_CARD.assuredPayHint}
+              priceCaption={BOOKING_RIDE_CARD.priceCaption}
               selected={selectedCategory === item.id}
               onSelect={() => setSelectedCategory(item.id)}
             />

@@ -63,6 +63,8 @@ describe("ride category demo flows", () => {
     expect(screen.getByTestId("ride-option-bike")).toBeInTheDocument();
     expect(screen.getByTestId("ride-option-auto")).toBeInTheDocument();
     expect(screen.getByTestId("ride-option-cab")).toBeInTheDocument();
+    expect(screen.getByTestId("ride-option-bike")).toHaveTextContent("Smoother checkout available");
+    expect(screen.getByTestId("ride-option-bike")).not.toHaveTextContent(/Max ₹/);
   });
 
   it.each([

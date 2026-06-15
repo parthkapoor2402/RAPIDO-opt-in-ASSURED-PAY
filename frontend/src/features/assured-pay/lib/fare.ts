@@ -1,5 +1,7 @@
 import type { FareCardLine } from "@/features/assured-pay/types";
 
+import { TRUST_COPY } from "@/features/assured-pay/lib/copy";
+
 export const DEFAULT_BUFFER_INR = 7;
 export const DEFAULT_ESTIMATE_F = 42;
 
@@ -14,25 +16,42 @@ export function formatInr(amount: number): string {
   return `₹${amount.toLocaleString("en-IN")}`;
 }
 
+/** Primary fare row — what the rider pays by default. */
+export function buildPrimaryFareLine(estimateF: number): FareCardLine {
+  return {
+    label: "Your fare",
+    amount: formatInr(estimateF),
+    emphasis: true,
+    hint: TRUST_COPY.primaryFareHint,
+  };
+}
+
+/** Buffer + approved max — conditional, secondary. */
+export function buildConditionalFareLines(
+  bufferInr: number,
+  approvedMax: number,
+): FareCardLine[] {
+  return [
+    {
+      label: "Buffer for valid updates",
+      amount: formatInr(bufferInr),
+      hint: "Waiting, route, or toll changes during the ride",
+    },
+    {
+      label: "Approved max (if fare changes)",
+      amount: formatInr(approvedMax),
+      hint: TRUST_COPY.approvedMaxHint,
+    },
+  ];
+}
+
+/** @deprecated Prefer buildPrimaryFareLine + buildConditionalFareLines for booking UI. */
 export function buildFareCardLines(
   estimateF: number,
   bufferInr: number,
   approvedMax: number,
 ): FareCardLine[] {
-  return [
-    { label: "Fare estimate (F)", amount: formatInr(estimateF) },
-    {
-      label: "Buffer included",
-      amount: formatInr(bufferInr),
-      hint: "Covers small valid fare changes during the ride",
-    },
-    {
-      label: "Approved max (M)",
-      amount: formatInr(approvedMax),
-      emphasis: true,
-      hint: "Most you approve before the ride starts",
-    },
-  ];
+  return [buildPrimaryFareLine(estimateF), ...buildConditionalFareLines(bufferInr, approvedMax)];
 }
 
 export function formatReasonCodes(codes: string[]): string {

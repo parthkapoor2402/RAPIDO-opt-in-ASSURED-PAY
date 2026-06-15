@@ -17,13 +17,13 @@ describe("fare helpers", () => {
     expect(formatInr(1248)).toBe("₹1,248");
   });
 
-  it("builds fare card lines with F, buffer, and M", () => {
+  it("builds fare card lines with primary fare and conditional max", () => {
     const lines = buildFareCardLines(42, 7, 49);
     expect(lines).toHaveLength(3);
+    expect(lines[0].label).toBe("Your fare");
     expect(lines[0].amount).toBe("₹42");
-    expect(lines[1].amount).toBe("₹7");
+    expect(lines[0].emphasis).toBe(true);
     expect(lines[2].amount).toBe("₹49");
-    expect(lines[2].emphasis).toBe(true);
   });
 
   it("formats reason codes for display", () => {

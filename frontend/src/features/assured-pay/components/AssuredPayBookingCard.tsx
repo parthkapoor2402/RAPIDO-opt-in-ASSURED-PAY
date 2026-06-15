@@ -5,9 +5,14 @@ import Link from "next/link";
 import { CTAButton } from "@/components/ui/CTAButton";
 import { AssuredPayFareCard } from "@/features/assured-pay/components/AssuredPayFareCard";
 import { AssuredPayExplanationModal } from "@/features/assured-pay/components/AssuredPayExplanationModal";
-import { DiscoveryPromptBanner } from "@/features/assured-pay/components/DiscoveryPromptBanner";
 import { FreeTrialBadge } from "@/features/assured-pay/components/FreeTrialBadge";
-import { BLOCK_REASON_MESSAGES, TRUST_COPY } from "@/features/assured-pay/lib/copy";
+import {
+  BLOCK_REASON_MESSAGES,
+  BOOKING_MODULE,
+  getAssuredPayCtaLabel,
+  TRUST_COPY,
+} from "@/features/assured-pay/lib/copy";
+import { formatInr } from "@/features/assured-pay/lib/fare";
 import type { AssuredPayEligibility, DiscoverySource } from "@/features/assured-pay/types";
 import { useState } from "react";
 
@@ -21,16 +26,11 @@ interface AssuredPayBookingCardProps {
 
 export function AssuredPayBookingCard({
   eligibility,
-  primaryPromptId,
   optInEnabled,
   onOpenOptIn,
   onLearnMore,
 }: AssuredPayBookingCardProps) {
   const [modalOpen, setModalOpen] = useState(false);
-  const primaryPrompt =
-    eligibility.prompts.find((p) => p.id === primaryPromptId) ??
-    eligibility.prompts[0] ??
-    null;
 
   if (!eligibility.eligible) {
     const message =
@@ -62,26 +62,66 @@ export function AssuredPayBookingCard({
     );
   }
 
+  const ctaLabel = getAssuredPayCtaLabel(eligibility.freeTrialAvailable);
+
   return (
-    <div className="space-y-3" data-testid="assured-pay-booking-card">
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <p className="text-sm font-bold text-rapido-black">Assured Pay</p>
-          <p className="text-xs text-rapido-grey">{TRUST_COPY.riderLead}</p>
+    <div
+      className="space-y-3 rounded-2xl border border-brand-600/25 bg-brand-50/40 px-4 py-4"
+      data-testid="assured-pay-booking-card"
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="space-y-1">
+          <p className="text-xs font-bold uppercase tracking-wide text-brand-800">
+            {BOOKING_MODULE.label}
+          </p>
+          <p className="text-sm font-bold text-rapido-black" data-testid="assured-pay-module-headline">
+            {BOOKING_MODULE.headline}
+          </p>
+          <p className="text-xs text-rapido-grey" data-testid="assured-pay-module-helper">
+            {BOOKING_MODULE.helper}
+          </p>
         </div>
         <FreeTrialBadge show={eligibility.freeTrialAvailable} />
       </div>
 
-      <DiscoveryPromptBanner
-        prompt={primaryPrompt}
-        onAction={() => primaryPrompt && onOpenOptIn(primaryPrompt.id)}
-      />
+      <div
+        className="flex items-baseline justify-between rounded-xl bg-white px-3 py-2"
+        data-testid="assured-pay-selected-fare"
+      >
+        <span className="text-xs text-rapido-grey">{eligibility.categoryLabel} fare</span>
+        <span className="text-lg font-bold tabular-nums text-rapido-black">{formatInr(eligibility.F)}</span>
+      </div>
+
+      {optInEnabled ? (
+        <p
+          data-testid="assured-pay-enabled-banner"
+          className="rounded-xl bg-success-50 px-3 py-2 text-xs font-semibold text-success-700"
+        >
+          {TRUST_COPY.optInConfirm}
+        </p>
+      ) : (
+        <div className="space-y-1">
+          {eligibility.freeTrialAvailable ? (
+            <p className="text-center text-xs font-semibold text-brand-800" data-testid="assured-pay-incentive">
+              {BOOKING_MODULE.incentiveFreeTrial}
+            </p>
+          ) : null}
+          <Link href="/booking/assured-pay" onClick={() => onOpenOptIn("booking_card")}>
+            <CTAButton fullWidth variant="primary" data-testid="assured-pay-opt-in-cta">
+              {ctaLabel}
+            </CTAButton>
+          </Link>
+          <p className="text-center text-[11px] text-rapido-grey">{BOOKING_MODULE.ctaSubline}</p>
+        </div>
+      )}
 
       <AssuredPayFareCard
         estimateF={eligibility.F}
         buffer={eligibility.buffer}
         approvedMax={eligibility.M}
         reasonCodes={eligibility.validReasonCodes}
+        showTrustLine={false}
+        variant="booking"
       />
 
       <button
@@ -93,23 +133,8 @@ export function AssuredPayBookingCard({
           onLearnMore?.();
         }}
       >
-        What it covers / what it does not cover
+        How Assured Pay works
       </button>
-
-      {optInEnabled ? (
-        <p
-          data-testid="assured-pay-enabled-banner"
-          className="rounded-xl bg-success-50 px-3 py-2 text-xs font-semibold text-success-700"
-        >
-          {TRUST_COPY.optInConfirm}
-        </p>
-      ) : (
-        <Link href="/booking/assured-pay" onClick={() => onOpenOptIn("booking_card")}>
-          <CTAButton fullWidth variant="primary" data-testid="assured-pay-opt-in-cta">
-            Turn on Assured Pay
-          </CTAButton>
-        </Link>
-      )}
 
       <AssuredPayExplanationModal open={modalOpen} onClose={() => setModalOpen(false)} />
     </div>

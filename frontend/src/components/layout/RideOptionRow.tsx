@@ -6,6 +6,8 @@ interface RideOptionRowProps {
   capacity: number;
   price: string;
   meta: string;
+  assuredPayHint?: string;
+  priceCaption?: string;
   selected?: boolean;
   premium?: boolean;
   onSelect?: () => void;
@@ -17,6 +19,8 @@ export function RideOptionRow({
   capacity,
   price,
   meta,
+  assuredPayHint,
+  priceCaption,
   selected = false,
   premium = false,
   onSelect,
@@ -44,8 +48,16 @@ export function RideOptionRow({
           {premium ? <span className="ml-1 text-brand-700">★</span> : null}
         </p>
         <p className="text-xs text-rapido-grey">{meta}</p>
+        {assuredPayHint ? (
+          <p className="mt-0.5 text-[11px] font-medium text-rapido-grey">{assuredPayHint}</p>
+        ) : null}
       </div>
-      <p className="text-base font-bold tabular-nums text-rapido-black">{price}</p>
+      <div className="text-right">
+        <p className="text-base font-bold tabular-nums text-rapido-black">{price}</p>
+        {priceCaption ? (
+          <p className="text-[10px] font-medium uppercase tracking-wide text-rapido-grey">{priceCaption}</p>
+        ) : null}
+      </div>
     </Component>
   );
 }

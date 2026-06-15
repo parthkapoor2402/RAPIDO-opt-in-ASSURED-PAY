@@ -15,7 +15,7 @@ import { AssuredPayExplanationModal } from "@/features/assured-pay/components/As
 import { DiscoveryPromptBanner } from "@/features/assured-pay/components/DiscoveryPromptBanner";
 import { FreeTrialBadge } from "@/features/assured-pay/components/FreeTrialBadge";
 import { useAssuredPayBooking } from "@/features/assured-pay/context/AssuredPayBookingContext";
-import { OPT_IN_SHEET, TRUST_COPY } from "@/features/assured-pay/lib/copy";
+import { BOOKING_MODULE, OPT_IN_SHEET, TRUST_COPY } from "@/features/assured-pay/lib/copy";
 import { CTAButton } from "@/components/ui/CTAButton";
 import { cn } from "@/lib/utils";
 
@@ -83,9 +83,13 @@ export function AssuredPayPageContent() {
 
       <BottomSheetPanel overlay className="space-y-4">
         <div className="flex items-start justify-between gap-2">
-          <div>
+          <div className="space-y-1">
             <h1 className="text-lg font-bold text-rapido-black">{OPT_IN_SHEET.title}</h1>
             <p className="text-sm text-rapido-grey">{OPT_IN_SHEET.subtitle}</p>
+            <p className="text-xs text-rapido-grey">{OPT_IN_SHEET.fareClarity}</p>
+            {eligibility.freeTrialAvailable ? (
+              <p className="text-xs font-semibold text-brand-800">{BOOKING_MODULE.incentiveFreeTrial}</p>
+            ) : null}
           </div>
           <FreeTrialBadge show={eligibility.freeTrialAvailable} />
         </div>
