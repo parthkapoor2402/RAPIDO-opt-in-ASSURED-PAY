@@ -5,6 +5,7 @@ import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { RideLivePageContent } from "@/components/pages/RideLivePageContent";
 import { DemoScenarioProvider } from "@/context/DemoScenarioContext";
 import { AssuredPayBookingProvider } from "@/features/assured-pay/context/AssuredPayBookingContext";
+import { ActiveRideProvider } from "@/features/active-ride/context/ActiveRideProvider";
 import { LiveRideProvider } from "@/features/live-ride/context/LiveRideProvider";
 import {
   LIVE_RIDE_SCENARIO_EXPECTATIONS,
@@ -16,9 +17,11 @@ function renderLiveRidePage() {
   return render(
     <DemoScenarioProvider initialScenarioId="rider_commuter">
       <AssuredPayBookingProvider>
-        <LiveRideProvider>
-          <RideLivePageContent />
-        </LiveRideProvider>
+        <ActiveRideProvider>
+          <LiveRideProvider>
+            <RideLivePageContent />
+          </LiveRideProvider>
+        </ActiveRideProvider>
       </AssuredPayBookingProvider>
     </DemoScenarioProvider>,
   );
@@ -242,5 +245,79 @@ describe("live ride scenario integration", () => {
         expect(screen.queryByTestId("fare-trust-indicator")).not.toBeInTheDocument();
       });
     }
+  });
+
+  it("hides vehicle overlay when opening live ride without booking", async () => {
+    sessionStorage.setItem(
+      "active-ride-assignment",
+      JSON.stringify({
+        rideId: "ride-stale",
+        categoryId: "bike",
+        captain: {
+          id: "captain-bike-01",
+          name: "Ravi K.",
+          rating: 4.9,
+          vehicleLabel: "Bike",
+          plate: "KA 01 AB 4521",
+        },
+        pickup: { id: "pickup-koramangala", title: "Koramangala 5th Block", address: "", area: "" },
+        destination: { id: "indiranagar", title: "Indiranagar", address: "", area: "" },
+        assignedAt: new Date().toISOString(),
+        movementPhase: "on_trip",
+        prePickupProgress: 1,
+      }),
+    );
+
+    renderLiveRidePage();
+    await waitForLiveRideReady();
+
+    expect(screen.queryByTestId("live-ride-vehicle-overlay")).not.toBeInTheDocument();
+    expect(screen.getByTestId("fare-trust-indicator")).toBeInTheDocument();
+  });
+
+  it("keeps scenario playback intact when vehicle assignment overlay is active", async () => {
+    sessionStorage.setItem("active-ride-booked", "true");
+    sessionStorage.setItem(
+      "active-ride-assignment",
+      JSON.stringify({
+        rideId: "ride-test",
+        categoryId: "bike",
+        captain: {
+          id: "captain-bike-01",
+          name: "Ravi K.",
+          rating: 4.9,
+          vehicleLabel: "Bike",
+          plate: "KA 01 AB 4521",
+        },
+        pickup: { id: "pickup-koramangala", title: "Koramangala 5th Block", address: "", area: "" },
+        destination: { id: "indiranagar", title: "Indiranagar", address: "", area: "" },
+        assignedAt: new Date().toISOString(),
+        movementPhase: "on_trip",
+        prePickupProgress: 1,
+      }),
+    );
+
+    const user = userEvent.setup();
+    renderLiveRidePage();
+    await waitForLiveRideReady();
+
+    expect(screen.getByTestId("live-ride-vehicle-overlay")).toBeInTheDocument();
+    expect(screen.getByTestId("assigned-captain-card")).toHaveTextContent("Ravi K.");
+
+    await selectScenario(user, "buffer_zone");
+
+    await waitFor(() => {
+      expect(screen.getByTestId("live-ride-event-timeline")).toHaveAttribute(
+        "data-scenario",
+        "buffer_zone",
+      );
+      expect(screen.getByTestId("live-ride-event-timeline")).toHaveTextContent("Pickup complete");
+    });
+
+    expect(screen.getByTestId("live-ride-vehicle-overlay")).toHaveAttribute(
+      "data-movement-phase",
+      "on_trip",
+    );
+    expect(screen.getByTestId("fare-trust-indicator")).toBeInTheDocument();
   });
 });

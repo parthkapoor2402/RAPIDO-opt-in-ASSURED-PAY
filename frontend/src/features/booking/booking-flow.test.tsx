@@ -6,13 +6,16 @@ import { BookingPageContent } from "@/components/pages/BookingPageContent";
 import { DemoScenarioProvider } from "@/context/DemoScenarioContext";
 import { AssuredPayBookingProvider } from "@/features/assured-pay/context/AssuredPayBookingContext";
 import { BookingFlowProvider } from "@/features/booking/context/BookingFlowProvider";
+import { ActiveRideProvider } from "@/features/active-ride/context/ActiveRideProvider";
 
 function renderBookingPage() {
   return render(
     <DemoScenarioProvider initialScenarioId="rider_commuter">
       <AssuredPayBookingProvider>
         <BookingFlowProvider>
-          <BookingPageContent />
+          <ActiveRideProvider>
+            <BookingPageContent />
+          </ActiveRideProvider>
         </BookingFlowProvider>
       </AssuredPayBookingProvider>
     </DemoScenarioProvider>,
@@ -67,6 +70,26 @@ describe("booking destination flow", () => {
     await waitFor(() => {
       expect(screen.getByTestId("destination-suggestion-hsr-layout")).toBeInTheDocument();
       expect(screen.queryByTestId("destination-suggestion-indiranagar")).not.toBeInTheDocument();
+    });
+  });
+
+  it("highlights nearby bike supply on map when bike is selected", async () => {
+    const user = userEvent.setup();
+    renderBookingPage();
+    await selectDestination(user);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("vehicle-marker-bike-3")).toHaveAttribute("data-highlighted", "true");
+      expect(screen.getByTestId("nearby-supply-primary")).toHaveTextContent("5 bikes nearby");
+    });
+
+    await user.click(screen.getByTestId("ride-option-auto"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("vehicle-map-markers")).toHaveAttribute("data-selected-category", "auto");
+      expect(screen.getByTestId("vehicle-marker-auto-1")).toHaveAttribute("data-highlighted", "true");
+      expect(screen.getByTestId("nearby-supply-primary")).toHaveTextContent("3 autos nearby");
+      expect(screen.getByTestId("ride-option-auto")).toHaveAttribute("data-selected", "true");
     });
   });
 });

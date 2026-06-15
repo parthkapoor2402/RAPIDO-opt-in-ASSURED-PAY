@@ -150,6 +150,20 @@ Select **Bike**, **Auto**, or **Cab** on [/booking](https://frontend-navy-eight-
 
 Your selection persists for live ride and post-ride completion screens.
 
+### Interactive booking & map experience
+
+This release adds a more realistic pre-ride and on-ride map layer **without changing Assured Pay fare logic**:
+
+| Feature | Behaviour |
+|---------|-----------|
+| **Destination selection** | Type or pick a destination on [/booking](https://frontend-navy-eight-23.vercel.app/booking); ride options and Book CTA unlock after drop is chosen |
+| **Nearby supply** | Map shows bike, auto, and cab markers around pickup; selected category is highlighted with supply counts |
+| **Vehicle assignment** | Book with Assured Pay on assigns a mock captain (name, rating, plate) for the chosen category |
+| **Movement** | On [/ride/live](https://frontend-navy-eight-23.vercel.app/ride/live), captain animates toward pickup, then along the route as playback steps advance |
+| **Assured Pay scenarios** | Existing live scenarios (At estimated fare, Entered buffer zone, Review required) and Step 4 completion playback are unchanged |
+
+**Demo tip:** Home → Book → choose destination → enable Assured Pay → Book Bike → Live tab to see assignment and movement. Opening Live directly still works for fare-scenario demo only (no captain overlay).
+
 ### Supported demo scenarios
 
 #### Live ride (during trip)
@@ -280,7 +294,7 @@ API base path: **`/api`**. OpenAPI: [live docs](https://frontend-navy-eight-23.v
 | Suite | Count | Scope |
 |-------|-------|-------|
 | Backend pytest | 151 | Domain policy, settlement, recovery, analytics, Grok guardrails |
-| Frontend Vitest | 147 | Components, contexts, live-ride + completion scenario integration, ride categories |
+| Frontend Vitest | 209 | Components, booking flow, map markers, vehicle movement, live-ride + completion integration |
 | Playwright E2E | 9 | Discovery, opt-in, live ride, overage, recovery, Grok fallback |
 
 ```powershell
@@ -394,8 +408,9 @@ vercel env add CORS_ORIGINS production
 
 - App loads: `https://YOUR-APP.vercel.app/home`
 - API docs: `https://YOUR-APP.vercel.app/api/docs`
-- Booking shows Bike / Auto / Cab rows
-- Live ride playback: `/ride/live`
+- Booking shows destination search, nearby map markers, and Bike / Auto / Cab rows after drop selection
+- Book with Assured Pay on → Live ride shows captain card and map movement
+- Live ride playback: `/ride/live` (all three fare scenarios + Step 4 completion)
 - Completion scenarios: `/ride/completed?outcome=valid_overage`
 
 Pre-demo checklist: [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md)

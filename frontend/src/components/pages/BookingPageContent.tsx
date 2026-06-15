@@ -10,6 +10,7 @@ import { StickyActionBar } from "@/components/layout/StickyActionBar";
 import { DestinationSearchPanel } from "@/features/booking/components/DestinationSearchPanel";
 import { VehicleMapMarkers } from "@/features/booking/components/VehicleMapMarkers";
 import { useBookingFlow } from "@/features/booking/context/BookingFlowProvider";
+import { useActiveRide } from "@/features/active-ride/context/ActiveRideProvider";
 import { AssuredPayBookingCard } from "@/features/assured-pay/components/AssuredPayBookingCard";
 import { useAssuredPayBooking } from "@/features/assured-pay/context/AssuredPayBookingContext";
 import { RIDE_CATEGORIES } from "@/features/assured-pay/lib/ride-categories";
@@ -18,7 +19,8 @@ import { formatInr } from "@/features/assured-pay/lib/fare";
 import { CTAButton } from "@/components/ui/CTAButton";
 
 export function BookingPageContent() {
-  const { canBook, destination } = useBookingFlow();
+  const { canBook, destination, pickup } = useBookingFlow();
+  const { assignFromBooking } = useActiveRide();
   const {
     eligibility,
     selectedCategory,
@@ -38,7 +40,7 @@ export function BookingPageContent() {
   return (
     <>
       <MapHeroPlaceholder height="booking">
-        <VehicleMapMarkers visible={canBook} />
+        <VehicleMapMarkers visible={canBook} selectedCategory={selectedCategory} />
         <Link
           href="/home"
           className="absolute left-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg shadow-float"
@@ -110,7 +112,14 @@ export function BookingPageContent() {
               >
                 Pay: {paymentMethod === "cash" ? "Cash" : "UPI"}
               </button>
-              <Link href={optIn.enabled ? "/ride/live" : "/booking/assured-pay"}>
+              <Link
+                href={optIn.enabled ? "/ride/live" : "/booking/assured-pay"}
+                onClick={() => {
+                  if (optIn.enabled && destination) {
+                    assignFromBooking(selectedCategory, pickup, destination);
+                  }
+                }}
+              >
                 <CTAButton fullWidth data-testid="book-ride-cta">
                   {bookLabel}
                 </CTAButton>

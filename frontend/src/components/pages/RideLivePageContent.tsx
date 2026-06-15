@@ -12,6 +12,8 @@ import { LiveRidePlaybackControls } from "@/features/live-ride/components/LiveRi
 import { ReasonCodeUpdateList } from "@/features/live-ride/components/ReasonCodeUpdateList";
 import { RideCompletionCard } from "@/features/live-ride/components/RideCompletionCard";
 import { GrokExplanationPanel } from "@/features/grok/components/GrokExplanationPanel";
+import { LiveRideVehicleOverlay } from "@/features/active-ride/components/LiveRideVehicleOverlay";
+import { useResetPlaybackOnNewRide } from "@/features/active-ride/hooks/useResetPlaybackOnNewRide";
 import { useAssuredPayBooking } from "@/features/assured-pay/context/AssuredPayBookingContext";
 import { getRideCategory } from "@/features/assured-pay/lib/ride-categories";
 import { LIVE_RIDE_PAGE } from "@/features/live-ride/lib/copy";
@@ -39,9 +41,12 @@ export function RideLivePageContent() {
     resetPlayback,
   } = useLiveRide();
 
+  useResetPlaybackOnNewRide();
+
   return (
     <>
       <MapHeroPlaceholder height="pickup">
+        <LiveRideVehicleOverlay />
         <Link
           href="/booking"
           className="absolute bottom-4 left-4 flex h-10 w-10 items-center justify-center rounded-full bg-white text-lg shadow-float"

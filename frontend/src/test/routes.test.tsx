@@ -14,6 +14,7 @@ import { SupportReviewPageContent } from "@/components/pages/SupportReviewPageCo
 import { DemoScenarioProvider } from "@/context/DemoScenarioContext";
 import { AssuredPayBookingProvider } from "@/features/assured-pay/context/AssuredPayBookingContext";
 import { BookingFlowProvider } from "@/features/booking/context/BookingFlowProvider";
+import { ActiveRideProvider } from "@/features/active-ride/context/ActiveRideProvider";
 import { LiveRideProvider } from "@/features/live-ride/context/LiveRideProvider";
 import { RecoveryProvider } from "@/features/recovery/context/RecoveryProvider";
 import type { ComponentType, ReactNode } from "react";
@@ -24,7 +25,9 @@ function withDiscoveryProviders(children: ReactNode) {
       <RecoveryProvider>
         <AssuredPayBookingProvider>
           <BookingFlowProvider>
-            <LiveRideProvider>{children}</LiveRideProvider>
+            <ActiveRideProvider>
+              <LiveRideProvider>{children}</LiveRideProvider>
+            </ActiveRideProvider>
           </BookingFlowProvider>
         </AssuredPayBookingProvider>
       </RecoveryProvider>

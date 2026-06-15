@@ -9,6 +9,7 @@ import { SupportReviewPageContent } from "@/components/pages/SupportReviewPageCo
 import { DemoScenarioProvider } from "@/context/DemoScenarioContext";
 import { AssuredPayBookingProvider } from "@/features/assured-pay/context/AssuredPayBookingContext";
 import { BookingFlowProvider } from "@/features/booking/context/BookingFlowProvider";
+import { ActiveRideProvider } from "@/features/active-ride/context/ActiveRideProvider";
 import { LiveRideProvider } from "@/features/live-ride/context/LiveRideProvider";
 import { RecoveryProvider } from "@/features/recovery/context/RecoveryProvider";
 import { MOCK_RECOVERY_WITH_DUE, MOCK_REPEAT_UNPAID } from "@/features/recovery/mock/recovery-mock";
@@ -55,7 +56,9 @@ function withProviders(children: ReactNode, scenarioId = "rider_commuter") {
       <RecoveryProvider>
         <AssuredPayBookingProvider>
           <BookingFlowProvider>
-            <LiveRideProvider>{children}</LiveRideProvider>
+            <ActiveRideProvider>
+              <LiveRideProvider>{children}</LiveRideProvider>
+            </ActiveRideProvider>
           </BookingFlowProvider>
         </AssuredPayBookingProvider>
       </RecoveryProvider>

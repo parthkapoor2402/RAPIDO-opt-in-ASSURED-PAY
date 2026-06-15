@@ -10,6 +10,7 @@ import {
   useAssuredPayBooking,
 } from "@/features/assured-pay/context/AssuredPayBookingContext";
 import { BookingFlowProvider } from "@/features/booking/context/BookingFlowProvider";
+import { ActiveRideProvider } from "@/features/active-ride/context/ActiveRideProvider";
 import { getCategoryFare } from "@/features/assured-pay/lib/ride-categories";
 import type { RideCategoryId } from "@/features/assured-pay/lib/ride-categories";
 import { LiveRideProvider } from "@/features/live-ride/context/LiveRideProvider";
@@ -28,8 +29,10 @@ function renderBooking() {
     <DemoScenarioProvider initialScenarioId="rider_commuter">
       <AssuredPayBookingProvider>
         <BookingFlowProvider>
-          <CategoryProbe />
-          <BookingPageContent />
+          <ActiveRideProvider>
+            <CategoryProbe />
+            <BookingPageContent />
+          </ActiveRideProvider>
         </BookingFlowProvider>
       </AssuredPayBookingProvider>
     </DemoScenarioProvider>,
@@ -49,9 +52,11 @@ function renderLiveRide(category: RideCategoryId) {
     <DemoScenarioProvider initialScenarioId="rider_commuter">
       <AssuredPayBookingProvider>
         <BookingFlowProvider>
-          <LiveRideProvider>
-            <RideLivePageContent />
-          </LiveRideProvider>
+          <ActiveRideProvider>
+            <LiveRideProvider>
+              <RideLivePageContent />
+            </LiveRideProvider>
+          </ActiveRideProvider>
         </BookingFlowProvider>
       </AssuredPayBookingProvider>
     </DemoScenarioProvider>,
@@ -118,9 +123,11 @@ describe("ride category demo flows", () => {
       <DemoScenarioProvider initialScenarioId="rider_commuter">
         <AssuredPayBookingProvider>
           <BookingFlowProvider>
-            <LiveRideProvider>
-              <RideLivePageContent />
-            </LiveRideProvider>
+            <ActiveRideProvider>
+              <LiveRideProvider>
+                <RideLivePageContent />
+              </LiveRideProvider>
+            </ActiveRideProvider>
           </BookingFlowProvider>
         </AssuredPayBookingProvider>
       </DemoScenarioProvider>,
