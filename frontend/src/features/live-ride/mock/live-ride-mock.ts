@@ -1,5 +1,10 @@
 import { computeApprovedMax, formatInr } from "@/features/assured-pay/lib/fare";
 import { BIKE_DEMO_BASE, getLiveRideStepFare } from "@/features/assured-pay/lib/scenario-fare-engine";
+import {
+  buildRideCompletionPlayback,
+  isCompletionStep,
+  type ExceedsReviewCompletionVariant,
+} from "@/features/live-ride/lib/completion-playback";
 import { mapFareStateToTrustState } from "@/features/live-ride/lib/trust-state";
 import type { RideProgressPayload, RideScenarioSummary } from "@/features/live-ride/types";
 
@@ -9,21 +14,21 @@ const DEFAULT_BUFFER = BIKE_DEMO_BASE.buffer;
 export const DEMO_SCENARIOS: RideScenarioSummary[] = [
   {
     id: "within_max",
-    label: "Within approved max",
-    description: "Fare stays at or below estimate.",
-    step_count: 3,
+    label: "At estimated fare",
+    description: "Final charge matched your original estimate.",
+    step_count: 4,
   },
   {
     id: "buffer_zone",
     label: "Entered buffer zone",
     description: "Waiting charge enters buffer.",
-    step_count: 3,
+    step_count: 4,
   },
   {
     id: "exceeds_review",
     label: "Review required",
     description: "Fare exceeds max without verified reason.",
-    step_count: 3,
+    step_count: 4,
   },
 ];
 
@@ -50,6 +55,11 @@ const MOCK_STEPS: Record<string, MockStep[]> = {
       timeline_title: "Approaching drop",
       timeline_subtitle: "Still at estimate · well within your approved max",
     },
+    {
+      reason_codes: [],
+      timeline_title: "Ride complete",
+      timeline_subtitle: "Same as your booking fare",
+    },
   ],
   buffer_zone: [
     {
@@ -67,6 +77,11 @@ const MOCK_STEPS: Record<string, MockStep[]> = {
       timeline_title: "Route adjustment applied",
       timeline_subtitle: "Detour applied · still covered under your max",
     },
+    {
+      reason_codes: ["waiting_after_arrival", "rider_requested_route_change"],
+      timeline_title: "Ride complete",
+      timeline_subtitle: "Fare went up · still within your max",
+    },
   ],
   exceeds_review: [
     {
@@ -83,6 +98,11 @@ const MOCK_STEPS: Record<string, MockStep[]> = {
       reason_codes: [],
       timeline_title: "Fare above max",
       timeline_subtitle: "Unusual extension · we review before any extra charge",
+    },
+    {
+      reason_codes: ["waiting_after_arrival"],
+      timeline_title: "Ride complete",
+      timeline_subtitle: "Settlement after fare check",
     },
   ],
 };
@@ -135,14 +155,28 @@ export function buildMockRideProgress(
   estimateF: number = DEFAULT_F,
   assuredPayActive = true,
   buffer: number = DEFAULT_BUFFER,
+  exceedsCompletionVariant: ExceedsReviewCompletionVariant = "valid_overage",
 ): RideProgressPayload & { timeline_title: string; timeline_subtitle: string } {
   const steps = MOCK_STEPS[scenarioId] ?? MOCK_STEPS.within_max;
   const step = steps[Math.min(stepIndex, steps.length - 1)];
   const currentFare = getLiveRideStepFare(scenarioId, stepIndex, estimateF, buffer);
   const approvedM = computeApprovedMax(estimateF, buffer);
+  const completed = isCompletionStep(stepIndex);
 
   const fareState = classifyFareState(currentFare, estimateF, approvedM);
-  const requiresReview = mockRequiresReview(currentFare, approvedM, step.reason_codes);
+  const requiresReview = completed
+    ? exceedsCompletionVariant === "suspicious_overage" && scenarioId === "exceeds_review"
+    : mockRequiresReview(currentFare, approvedM, step.reason_codes);
+
+  const completion =
+    completed
+      ? buildRideCompletionPlayback(
+          scenarioId,
+          estimateF,
+          buffer,
+          exceedsCompletionVariant,
+        )
+      : undefined;
 
   return {
     estimate_f: estimateF,
@@ -157,6 +191,8 @@ export function buildMockRideProgress(
     reason_updates: buildReasonUpdates(estimateF, currentFare, step.reason_codes),
     latest_reason_code: step.reason_codes.at(-1) ?? null,
     policy_version: "0.1.0-mock",
+    ride_phase: completed ? "completed" : "active",
+    completion,
     timeline_title: step.timeline_title,
     timeline_subtitle: step.timeline_subtitle,
   };

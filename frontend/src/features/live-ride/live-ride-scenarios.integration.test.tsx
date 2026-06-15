@@ -8,6 +8,7 @@ import { AssuredPayBookingProvider } from "@/features/assured-pay/context/Assure
 import { LiveRideProvider } from "@/features/live-ride/context/LiveRideProvider";
 import {
   LIVE_RIDE_SCENARIO_EXPECTATIONS,
+  LIVE_RIDE_COMPLETION_STEP_EXPECTATIONS,
   getScenarioExpectation,
 } from "@/features/live-ride/test/scenario-expectations";
 
@@ -33,10 +34,14 @@ async function selectScenario(user: ReturnType<typeof userEvent.setup>, scenario
   await user.selectOptions(screen.getByTestId("playback-scenario-select"), scenarioId);
 }
 
-async function advanceToFinalStep(user: ReturnType<typeof userEvent.setup>, finalStepIndex: number) {
-  for (let step = 0; step < finalStepIndex; step += 1) {
+async function advanceToStep(user: ReturnType<typeof userEvent.setup>, targetStepIndex: number) {
+  for (let step = 0; step < targetStepIndex; step += 1) {
     await user.click(screen.getByRole("button", { name: "Next" }));
   }
+}
+
+async function advanceToFinalStep(user: ReturnType<typeof userEvent.setup>, finalStepIndex: number) {
+  await advanceToStep(user, finalStepIndex);
 }
 
 async function assertScenarioPresentation(expected: ReturnType<typeof getScenarioExpectation>) {
@@ -102,12 +107,12 @@ describe("live ride scenario integration", () => {
     renderLiveRidePage();
     await waitForLiveRideReady();
 
-    await advanceToFinalStep(user, 2);
-    expect(screen.getByText("Step 3 of 3")).toBeInTheDocument();
+    await advanceToStep(user, 2);
+    expect(screen.getByText("Step 3 of 4")).toBeInTheDocument();
 
     await selectScenario(user, "buffer_zone");
     await waitFor(() => {
-      expect(screen.getByText("Step 1 of 3")).toBeInTheDocument();
+      expect(screen.getByText("Step 1 of 4")).toBeInTheDocument();
       expect(screen.getByTestId("live-ride-event-timeline")).toHaveAttribute(
         "data-scenario",
         "buffer_zone",
@@ -153,5 +158,72 @@ describe("live ride scenario integration", () => {
       expect(screen.getByTestId("live-ride-event-timeline")).toHaveTextContent("2 min waiting added");
       expect(screen.getByTestId("reason-update-pill")).toBeInTheDocument();
     });
+  });
+
+  it("shows Scenario 1 renamed as At estimated fare in playback selector", async () => {
+    renderLiveRidePage();
+    await waitForLiveRideReady();
+
+    const select = screen.getByTestId("playback-scenario-select");
+    expect(select).toHaveTextContent("At estimated fare");
+    expect(select).not.toHaveTextContent("Within approved max");
+  });
+
+  it.each(
+    LIVE_RIDE_COMPLETION_STEP_EXPECTATIONS.filter((item) => item.variant !== "suspicious_overage"),
+  )("renders Step 4 completion for $id", async (expected) => {
+    const user = userEvent.setup();
+    renderLiveRidePage();
+    await waitForLiveRideReady();
+
+    await selectScenario(user, expected.id);
+    await advanceToStep(user, expected.stepIndex);
+
+    const card = await screen.findByTestId("ride-completion-card");
+    expect(card).toHaveAttribute("data-scenario", expected.id);
+    expect(within(card).getByText("Ride complete")).toBeInTheDocument();
+    expect(within(card).getByTestId("ride-completion-headline")).toHaveTextContent(
+      expected.headline,
+    );
+    expect(within(card).getByTestId("ride-completion-charge")).toHaveTextContent(
+      expected.chargeSummary,
+    );
+    expect(within(card).getByTestId("ride-completion-payment-status")).toHaveTextContent(
+      expected.paymentStatus,
+    );
+    expect(within(card).getByTestId("ride-completion-next-step")).toHaveTextContent(
+      expected.nextStep,
+    );
+    if ("statusBadge" in expected && expected.statusBadge) {
+      expect(within(card).getByTestId("ride-completion-badge")).toHaveTextContent(
+        expected.statusBadge,
+      );
+    }
+    if ("reasonHint" in expected && expected.reasonHint) {
+      expect(screen.getByTestId("ride-completion-reason")).toHaveTextContent(expected.reasonHint);
+    }
+    expect(screen.queryByTestId("fare-trust-indicator")).not.toBeInTheDocument();
+  });
+
+  it("renders Step 4 suspicious excess subcase for exceeds_review", async () => {
+    const user = userEvent.setup();
+    renderLiveRidePage();
+    await waitForLiveRideReady();
+
+    await selectScenario(user, "exceeds_review");
+    await advanceToStep(user, 3);
+
+    await user.selectOptions(screen.getByTestId("completion-variant-select"), "suspicious_overage");
+
+    const card = await screen.findByTestId("ride-completion-card");
+    expect(card).toHaveAttribute("data-completion-variant", "suspicious_overage");
+    expect(within(card).getByTestId("ride-completion-headline")).toHaveTextContent(
+      "Approved amount secured",
+    );
+    expect(within(card).getByTestId("ride-completion-charge")).toHaveTextContent("₹49");
+    expect(within(card).getByTestId("ride-completion-payment-status")).toHaveTextContent(
+      "₹3 under review",
+    );
+    expect(within(card).getByTestId("ride-completion-badge")).toHaveTextContent("Under review");
   });
 });

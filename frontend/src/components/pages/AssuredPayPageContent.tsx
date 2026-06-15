@@ -15,7 +15,7 @@ import { AssuredPayExplanationModal } from "@/features/assured-pay/components/As
 import { DiscoveryPromptBanner } from "@/features/assured-pay/components/DiscoveryPromptBanner";
 import { FreeTrialBadge } from "@/features/assured-pay/components/FreeTrialBadge";
 import { useAssuredPayBooking } from "@/features/assured-pay/context/AssuredPayBookingContext";
-import { BOOKING_MODULE, OPT_IN_SHEET, TRUST_COPY } from "@/features/assured-pay/lib/copy";
+import { FREE_TRIAL_PROMO, OPT_IN_SHEET, TRUST_COPY } from "@/features/assured-pay/lib/copy";
 import { CTAButton } from "@/components/ui/CTAButton";
 import { cn } from "@/lib/utils";
 
@@ -82,16 +82,21 @@ export function AssuredPayPageContent() {
       </div>
 
       <BottomSheetPanel overlay className="space-y-4">
-        <div className="flex items-start justify-between gap-2">
+        <div className="space-y-3">
           <div className="space-y-1">
             <h1 className="text-lg font-bold text-rapido-black">{OPT_IN_SHEET.title}</h1>
             <p className="text-sm text-rapido-grey">{OPT_IN_SHEET.subtitle}</p>
             <p className="text-xs text-rapido-grey">{OPT_IN_SHEET.fareClarity}</p>
-            {eligibility.freeTrialAvailable ? (
-              <p className="text-xs font-semibold text-brand-800">{BOOKING_MODULE.incentiveFreeTrial}</p>
-            ) : null}
           </div>
-          <FreeTrialBadge show={eligibility.freeTrialAvailable} />
+          {eligibility.freeTrialPromoEligible ? (
+            <div
+              className="flex items-start gap-2 rounded-xl border border-brand-600/15 bg-brand-50/60 px-3 py-2"
+              data-testid="assured-pay-promo-strip"
+            >
+              <FreeTrialBadge show />
+              <p className="text-xs text-rapido-grey">{FREE_TRIAL_PROMO.supportLine}</p>
+            </div>
+          ) : null}
         </div>
 
         <DiscoveryPromptBanner

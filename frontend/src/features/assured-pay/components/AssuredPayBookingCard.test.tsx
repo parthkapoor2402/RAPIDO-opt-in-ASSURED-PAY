@@ -15,7 +15,8 @@ const eligibleFixture: AssuredPayEligibility = {
   F: 42,
   buffer: 7,
   M: 49,
-  freeTrialAvailable: true,
+  riderTrialUnused: true,
+  freeTrialPromoEligible: true,
   validReasonCodes: ["waiting", "route_change", "toll", "pickup_correction"],
   hasPaymentInstrument: true,
   prompts: [
@@ -106,8 +107,11 @@ describe("AssuredPayBookingCard", () => {
     expect(screen.getByTestId("assured-pay-module-headline")).toHaveTextContent(/smoother checkout/i);
     expect(screen.getByTestId("assured-pay-module-helper")).toHaveTextContent(/not the max/i);
     expect(screen.getByTestId("assured-pay-fare-clarity")).toBeInTheDocument();
-    expect(screen.getByTestId("assured-pay-opt-in-cta")).toHaveTextContent(/Try free/i);
-    expect(screen.getByTestId("assured-pay-incentive")).toBeInTheDocument();
+    expect(screen.getByTestId("assured-pay-opt-in-cta")).toHaveTextContent("Add Assured Pay");
+    expect(screen.getByTestId("assured-pay-promo-strip")).toBeInTheDocument();
+    expect(screen.getByTestId("assured-pay-incentive")).toHaveTextContent(/Limited trial on this bike ride/i);
+    expect(screen.getByTestId("assured-pay-cta-subline")).toHaveTextContent(/One-time trial/i);
+    expect(screen.getByTestId("free-trial-badge")).toHaveTextContent("Eligible trial");
 
     await user.click(screen.getByTestId("learn-more-assured-pay"));
     expect(screen.getByTestId("assured-pay-explanation-modal")).toBeInTheDocument();

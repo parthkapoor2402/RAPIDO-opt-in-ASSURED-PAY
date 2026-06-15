@@ -127,4 +127,28 @@ describe("ride category demo flows", () => {
       expect(screen.getByTestId("fare-meter-current")).toHaveTextContent(`₹${M - 1}`);
     });
   });
+
+  it("shows bike trial promo only when bike is selected", async () => {
+    const user = userEvent.setup();
+    renderBooking();
+
+    expect(screen.getByTestId("free-trial-badge")).toBeInTheDocument();
+    expect(screen.getByTestId("assured-pay-promo-strip")).toBeInTheDocument();
+    expect(screen.getByTestId("assured-pay-opt-in-cta")).toHaveTextContent("Add Assured Pay");
+    expect(screen.queryByText(/First ride free/i)).not.toBeInTheDocument();
+
+    await user.click(screen.getByTestId("ride-option-auto"));
+    await waitFor(() => {
+      expect(screen.queryByTestId("free-trial-badge")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("assured-pay-promo-strip")).not.toBeInTheDocument();
+    });
+    expect(screen.getByTestId("assured-pay-opt-in-cta")).toHaveTextContent("Add Assured Pay");
+    expect(screen.queryByTestId("assured-pay-incentive")).not.toBeInTheDocument();
+
+    await user.click(screen.getByTestId("ride-option-cab"));
+    await waitFor(() => {
+      expect(screen.queryByTestId("free-trial-badge")).not.toBeInTheDocument();
+    });
+    expect(screen.getByTestId("assured-pay-opt-in-cta")).toHaveTextContent("Add Assured Pay");
+  });
 });

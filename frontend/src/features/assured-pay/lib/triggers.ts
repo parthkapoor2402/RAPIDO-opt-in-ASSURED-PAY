@@ -25,6 +25,7 @@ export function isEligible(ctx: DiscoveryContextInput): {
 export function resolveDiscoveryPrompts(
   ctx: DiscoveryContextInput,
   eligible: boolean,
+  freeTrialPromoEligible = false,
 ): DiscoveryPrompt[] {
   const prompts: DiscoveryPrompt[] = [];
 
@@ -38,12 +39,12 @@ export function resolveDiscoveryPrompts(
     });
   }
 
-  if (eligible && ctx.freeTrialAvailable) {
+  if (freeTrialPromoEligible) {
     prompts.push({
       id: "free_trial",
       show: true,
-      headline: "First assured ride free",
-      subline: "Try Assured Pay on this ride — convenience at no extra charge.",
+      headline: "Try Assured Pay on this eligible bike ride",
+      subline: "Limited trial · upfront clarity and smoother checkout.",
       priority: 5,
     });
   }

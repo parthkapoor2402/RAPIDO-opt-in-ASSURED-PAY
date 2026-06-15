@@ -14,6 +14,7 @@ import {
   fetchRideProgressWithFallback,
   listScenariosWithFallback,
 } from "@/features/live-ride/api/ride-progress";
+import type { ExceedsReviewCompletionVariant } from "@/features/live-ride/lib/completion-playback";
 import { DEMO_SCENARIOS } from "@/features/live-ride/mock/live-ride-mock";
 import type { RideProgressPayload, RideScenarioSummary, TrustState } from "@/features/live-ride/types";
 import { useAssuredPayBooking } from "@/features/assured-pay/context/AssuredPayBookingContext";
@@ -29,6 +30,8 @@ interface LiveRideContextValue {
   timelineTitle: string;
   timelineSubtitle: string;
   setScenarioId: (id: string) => void;
+  completionVariant: ExceedsReviewCompletionVariant;
+  setCompletionVariant: (variant: ExceedsReviewCompletionVariant) => void;
   playNextStep: () => void;
   playPrevStep: () => void;
   resetPlayback: () => void;
@@ -46,6 +49,8 @@ export function LiveRideProvider({ children }: LiveRideProviderProps) {
   const [scenarios, setScenarios] = useState<RideScenarioSummary[]>(DEMO_SCENARIOS);
   const [scenarioId, setScenarioIdState] = useState("within_max");
   const [stepIndex, setStepIndex] = useState(0);
+  const [completionVariant, setCompletionVariant] =
+    useState<ExceedsReviewCompletionVariant>("valid_overage");
   const [progress, setProgress] = useState<RideProgressPayload | null>(null);
   const [timelineTitle, setTimelineTitle] = useState("Pickup complete");
   const [timelineSubtitle, setTimelineSubtitle] = useState("Starting trip");
@@ -65,6 +70,7 @@ export function LiveRideProvider({ children }: LiveRideProviderProps) {
         eligibility.F,
         optIn.enabled,
         eligibility.buffer,
+        completionVariant,
       );
       setProgress(payload);
       if ("timeline_title" in payload && payload.timeline_title) {
@@ -74,7 +80,7 @@ export function LiveRideProvider({ children }: LiveRideProviderProps) {
     } finally {
       setLoading(false);
     }
-  }, [scenarioId, stepIndex, eligibility.F, eligibility.buffer, optIn.enabled]);
+  }, [scenarioId, stepIndex, eligibility.F, eligibility.buffer, optIn.enabled, completionVariant]);
 
   useEffect(() => {
     void listScenariosWithFallback().then(setScenarios);
@@ -87,6 +93,7 @@ export function LiveRideProvider({ children }: LiveRideProviderProps) {
   const setScenarioId = useCallback((id: string) => {
     setScenarioIdState(id);
     setStepIndex(0);
+    setCompletionVariant("valid_overage");
   }, []);
 
   const playNextStep = useCallback(() => {
@@ -115,6 +122,8 @@ export function LiveRideProvider({ children }: LiveRideProviderProps) {
       timelineTitle,
       timelineSubtitle,
       setScenarioId,
+      completionVariant,
+      setCompletionVariant,
       playNextStep,
       playPrevStep,
       resetPlayback,
@@ -131,6 +140,7 @@ export function LiveRideProvider({ children }: LiveRideProviderProps) {
       timelineTitle,
       timelineSubtitle,
       setScenarioId,
+      completionVariant,
       playNextStep,
       playPrevStep,
       resetPlayback,

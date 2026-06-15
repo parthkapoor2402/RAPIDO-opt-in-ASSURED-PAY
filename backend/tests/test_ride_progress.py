@@ -81,6 +81,9 @@ def test_ride_scenario_playback_steps() -> None:
     assert list_response.status_code == 200
     scenarios = list_response.json()["scenarios"]
     assert len(scenarios) >= 3
+    within = next(s for s in scenarios if s["id"] == "within_max")
+    assert within["label"] == "At estimated fare"
+    assert within["step_count"] == 4
 
     step_response = client.get("/api/ride/scenarios/within_max/step/0")
     assert step_response.status_code == 200
@@ -90,6 +93,10 @@ def test_ride_scenario_playback_steps() -> None:
 
     final_step = client.get("/api/ride/scenarios/buffer_zone/step/2")
     assert final_step.json()["trust_state"] == "entered_buffer_zone"
+
+    completion_step = client.get("/api/ride/scenarios/within_max/step/3")
+    assert completion_step.status_code == 200
+    assert completion_step.json()["current_fare"] == 42
 
 
 def test_ride_scenario_unknown_returns_404() -> None:

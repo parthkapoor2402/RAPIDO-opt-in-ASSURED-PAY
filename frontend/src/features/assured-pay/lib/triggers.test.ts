@@ -40,11 +40,18 @@ describe("discovery trigger logic", () => {
     expect(prompts.some((p) => p.id === "post_failure")).toBe(true);
   });
 
-  it("shows free trial experiment for eligible commuter", () => {
+  it("shows free trial experiment for eligible commuter when promo eligible", () => {
     const ctx = baseCtx({ freeTrialAvailable: true, batteryLevel: 0.9 });
     const { eligible } = isEligible(ctx);
-    const prompts = resolveDiscoveryPrompts(ctx, eligible);
+    const prompts = resolveDiscoveryPrompts(ctx, eligible, true);
     expect(prompts.some((p) => p.id === "free_trial")).toBe(true);
+  });
+
+  it("hides free trial prompt when promo not eligible", () => {
+    const ctx = baseCtx({ freeTrialAvailable: true, batteryLevel: 0.9 });
+    const { eligible } = isEligible(ctx);
+    const prompts = resolveDiscoveryPrompts(ctx, eligible, false);
+    expect(prompts.some((p) => p.id === "free_trial")).toBe(false);
   });
 
   it("blocks discovery when rider has open residual", () => {

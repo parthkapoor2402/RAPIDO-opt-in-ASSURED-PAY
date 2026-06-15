@@ -65,3 +65,48 @@ export function getScenarioExpectation(id: string): LiveRideScenarioExpectation 
   }
   return found;
 }
+
+/** Step 4 (index 3) ride-completed playback expectations — bike demo fares. */
+export const LIVE_RIDE_COMPLETION_STEP_EXPECTATIONS = [
+  {
+    id: "within_max",
+    stepIndex: 3,
+    headline: "Charged at your estimate",
+    chargeSummary: "₹42",
+    paymentStatus: "Fare unchanged",
+    nextStep: /you're done/i,
+    timelineTitle: "Ride complete",
+  },
+  {
+    id: "buffer_zone",
+    stepIndex: 3,
+    headline: "Within what you approved",
+    chargeSummary: "₹48",
+    paymentStatus: "Fare went up · still in range",
+    reasonHint: /waiting/i,
+    nextStep: /No follow-up/i,
+    timelineTitle: "Ride complete",
+  },
+  {
+    id: "exceeds_review",
+    stepIndex: 3,
+    variant: "valid_overage" as const,
+    headline: "Charged up to your max",
+    chargeSummary: "₹49",
+    paymentStatus: "₹3 pending",
+    statusBadge: "Pending",
+    nextStep: /confirm the small extra/i,
+    timelineTitle: "Ride complete",
+  },
+  {
+    id: "exceeds_review",
+    stepIndex: 3,
+    variant: "suspicious_overage" as const,
+    headline: "Approved amount secured",
+    chargeSummary: "₹49",
+    paymentStatus: "₹3 under review",
+    statusBadge: "Under review",
+    nextStep: /before any extra charge/i,
+    timelineTitle: "Ride complete",
+  },
+];

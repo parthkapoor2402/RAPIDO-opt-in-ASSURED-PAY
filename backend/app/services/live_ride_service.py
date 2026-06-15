@@ -28,14 +28,15 @@ def _scenarios() -> dict[str, RidePlaybackScenario]:
     return {
         "within_max": RidePlaybackScenario(
             id="within_max",
-            label="Within approved max",
-            description="Fare stays at or below estimate — calm ride.",
+            label="At estimated fare",
+            description="Final charge matched your original estimate.",
             estimate_f=42,
             approved_m=49,
             steps=[
                 RidePlaybackStep(42, [], "Pickup complete", "Koramangala 5th Block"),
                 RidePlaybackStep(42, [], "En route", "On the way to Indiranagar"),
-                RidePlaybackStep(44, [], "Approaching drop", "Still within estimate"),
+                RidePlaybackStep(42, [], "Approaching drop", "Still at estimate"),
+                RidePlaybackStep(42, [], "Ride complete", "Charged at estimated fare"),
             ],
         ),
         "buffer_zone": RidePlaybackScenario(
@@ -49,6 +50,12 @@ def _scenarios() -> dict[str, RidePlaybackScenario]:
                 RidePlaybackStep(46, ["waiting_after_arrival"], "Waiting at signal", "Fare +₹4"),
                 RidePlaybackStep(
                     48, ["waiting_after_arrival"], "Still within max", "Buffer zone active"
+                ),
+                RidePlaybackStep(
+                    48,
+                    ["waiting_after_arrival", "rider_requested_route_change"],
+                    "Ride complete",
+                    "Charged within your approved max",
                 ),
             ],
         ),
@@ -64,6 +71,12 @@ def _scenarios() -> dict[str, RidePlaybackScenario]:
                     49, ["waiting_after_arrival"], "Waiting charge", "At approved max"
                 ),
                 RidePlaybackStep(52, [], "Above max", "Trip would need review if ended now"),
+                RidePlaybackStep(
+                    52,
+                    ["waiting_after_arrival"],
+                    "Ride complete",
+                    "Settlement based on verified fare update",
+                ),
             ],
         ),
     }

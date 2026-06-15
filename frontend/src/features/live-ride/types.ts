@@ -13,6 +13,17 @@ export interface FareReasonUpdate {
   reason_label: string;
 }
 
+export interface RideCompletionPlayback {
+  title: string;
+  headline: string;
+  chargeSummary: string;
+  paymentStatus: string;
+  nextStep: string;
+  statusBadge?: string;
+  reasonHint?: string;
+  variant?: "valid_overage" | "suspicious_overage";
+}
+
 export interface RideProgressPayload {
   estimate_f: number;
   approved_m: number;
@@ -26,6 +37,8 @@ export interface RideProgressPayload {
   reason_updates: FareReasonUpdate[];
   latest_reason_code: string | null;
   policy_version: string;
+  ride_phase?: "active" | "completed";
+  completion?: RideCompletionPlayback;
 }
 
 export interface RideScenarioSummary {

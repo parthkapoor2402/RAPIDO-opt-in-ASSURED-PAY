@@ -8,11 +8,16 @@ import {
 } from "@/features/live-ride/test/scenario-expectations";
 
 describe("buildMockRideProgress", () => {
-  it("exposes all three demo scenarios with three steps each", () => {
+  it("exposes all three demo scenarios with four steps each", () => {
     expect(DEMO_SCENARIOS).toHaveLength(3);
     for (const scenario of DEMO_SCENARIOS) {
-      expect(scenario.step_count).toBe(3);
+      expect(scenario.step_count).toBe(4);
     }
+  });
+
+  it("renames Scenario 1 to At estimated fare", () => {
+    const withinMax = DEMO_SCENARIOS.find((s) => s.id === "within_max");
+    expect(withinMax?.label).toBe("At estimated fare");
   });
 
   it.each(LIVE_RIDE_SCENARIO_EXPECTATIONS.map((s) => [s.id, s.finalStepIndex] as const))(
@@ -44,10 +49,45 @@ describe("buildMockRideProgress", () => {
     },
   );
 
-  it("within_max steps stay within_approved_max across playback", () => {
+  it("within_max steps stay within_approved_max through live ride (steps 1–3)", () => {
     for (let step = 0; step < 3; step += 1) {
       expect(buildMockRideProgress("within_max", step).trust_state).toBe("within_approved_max");
     }
+  });
+
+  it("step 4 marks ride completed with completion payload for each scenario", () => {
+    const within = buildMockRideProgress("within_max", 3);
+    expect(within.ride_phase).toBe("completed");
+    expect(within.completion?.headline).toBe("Charged at your estimate");
+    expect(within.completion?.chargeSummary).toBe("₹42");
+
+    const buffer = buildMockRideProgress("buffer_zone", 3);
+    expect(buffer.ride_phase).toBe("completed");
+    expect(buffer.completion?.headline).toBe("Within what you approved");
+    expect(buffer.completion?.chargeSummary).toBe("₹48");
+
+    const validExcess = buildMockRideProgress("exceeds_review", 3, 42, true, 7, "valid_overage");
+    expect(validExcess.completion).toMatchObject({
+      headline: "Charged up to your max",
+      chargeSummary: "₹49",
+      paymentStatus: "₹3 pending",
+      statusBadge: "Pending",
+    });
+
+    const suspicious = buildMockRideProgress(
+      "exceeds_review",
+      3,
+      42,
+      true,
+      7,
+      "suspicious_overage",
+    );
+    expect(suspicious.completion).toMatchObject({
+      headline: "Approved amount secured",
+      chargeSummary: "₹49",
+      paymentStatus: "₹3 under review",
+      statusBadge: "Under review",
+    });
   });
 
   it("buffer_zone enters buffer only after a valid reason charge", () => {

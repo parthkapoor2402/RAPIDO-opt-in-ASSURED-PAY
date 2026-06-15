@@ -1,6 +1,11 @@
 import { BIKE_DEMO_BASE } from "@/features/assured-pay/lib/scenario-fare-engine";
 import { API_PREFIX, apiUrl } from "@/lib/api";
 
+import {
+  buildRideCompletionPlayback,
+  isCompletionStep,
+  type ExceedsReviewCompletionVariant,
+} from "@/features/live-ride/lib/completion-playback";
 import type { RideProgressPayload, RideScenarioSummary } from "@/features/live-ride/types";
 import { buildMockRideProgress, DEMO_SCENARIOS } from "@/features/live-ride/mock/live-ride-mock";
 
@@ -65,32 +70,52 @@ export async function fetchRideProgressWithFallback(
   estimateF: number,
   assuredPayActive: boolean,
   buffer?: number,
+  completionVariant: ExceedsReviewCompletionVariant = "valid_overage",
 ): Promise<RideProgressPayload & { timeline_title?: string; timeline_subtitle?: string }> {
   const resolvedBuffer = buffer ?? BIKE_DEMO_BASE.buffer;
   const categoryUsesMock =
     estimateF !== BIKE_DEMO_BASE.F || resolvedBuffer !== BIKE_DEMO_BASE.buffer;
 
+  let payload: RideProgressPayload & { timeline_title?: string; timeline_subtitle?: string };
+
   if (categoryUsesMock) {
-    return buildMockRideProgress(
+    payload = buildMockRideProgress(
       scenarioId,
       stepIndex,
       estimateF,
       assuredPayActive,
       resolvedBuffer,
+      completionVariant,
     );
+  } else {
+    try {
+      payload = await fetchScenarioStep(scenarioId, stepIndex);
+    } catch {
+      payload = buildMockRideProgress(
+        scenarioId,
+        stepIndex,
+        estimateF,
+        assuredPayActive,
+        resolvedBuffer,
+        completionVariant,
+      );
+    }
   }
 
-  try {
-    return await fetchScenarioStep(scenarioId, stepIndex);
-  } catch {
-    return buildMockRideProgress(
-      scenarioId,
-      stepIndex,
-      estimateF,
-      assuredPayActive,
-      resolvedBuffer,
-    );
+  if (isCompletionStep(stepIndex) && !payload.completion) {
+    payload = {
+      ...payload,
+      ride_phase: "completed",
+      completion: buildRideCompletionPlayback(
+        scenarioId,
+        estimateF,
+        resolvedBuffer,
+        completionVariant,
+      ),
+    };
   }
+
+  return payload;
 }
 
 export async function listScenariosWithFallback(): Promise<RideScenarioSummary[]> {

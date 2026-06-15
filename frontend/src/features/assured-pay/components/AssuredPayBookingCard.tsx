@@ -9,7 +9,9 @@ import { FreeTrialBadge } from "@/features/assured-pay/components/FreeTrialBadge
 import {
   BLOCK_REASON_MESSAGES,
   BOOKING_MODULE,
+  FREE_TRIAL_PROMO,
   getAssuredPayCtaLabel,
+  getAssuredPayCtaSubline,
   TRUST_COPY,
 } from "@/features/assured-pay/lib/copy";
 import { formatInr } from "@/features/assured-pay/lib/fare";
@@ -62,26 +64,24 @@ export function AssuredPayBookingCard({
     );
   }
 
-  const ctaLabel = getAssuredPayCtaLabel(eligibility.freeTrialAvailable);
+  const ctaLabel = getAssuredPayCtaLabel();
+  const ctaSubline = getAssuredPayCtaSubline(eligibility.freeTrialPromoEligible);
 
   return (
     <div
       className="space-y-3 rounded-2xl border border-brand-600/25 bg-brand-50/40 px-4 py-4"
       data-testid="assured-pay-booking-card"
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="space-y-1">
-          <p className="text-xs font-bold uppercase tracking-wide text-brand-800">
-            {BOOKING_MODULE.label}
-          </p>
-          <p className="text-sm font-bold text-rapido-black" data-testid="assured-pay-module-headline">
-            {BOOKING_MODULE.headline}
-          </p>
-          <p className="text-xs text-rapido-grey" data-testid="assured-pay-module-helper">
-            {BOOKING_MODULE.helper}
-          </p>
-        </div>
-        <FreeTrialBadge show={eligibility.freeTrialAvailable} />
+      <div className="space-y-1">
+        <p className="text-xs font-bold uppercase tracking-wide text-brand-800">
+          {BOOKING_MODULE.label}
+        </p>
+        <p className="text-sm font-bold text-rapido-black" data-testid="assured-pay-module-headline">
+          {BOOKING_MODULE.headline}
+        </p>
+        <p className="text-xs text-rapido-grey" data-testid="assured-pay-module-helper">
+          {BOOKING_MODULE.helper}
+        </p>
       </div>
 
       <div
@@ -100,18 +100,26 @@ export function AssuredPayBookingCard({
           {TRUST_COPY.optInConfirm}
         </p>
       ) : (
-        <div className="space-y-1">
-          {eligibility.freeTrialAvailable ? (
-            <p className="text-center text-xs font-semibold text-brand-800" data-testid="assured-pay-incentive">
-              {BOOKING_MODULE.incentiveFreeTrial}
-            </p>
+        <div className="space-y-2">
+          {eligibility.freeTrialPromoEligible ? (
+            <div
+              className="flex items-start gap-2 rounded-xl border border-brand-600/15 bg-white px-3 py-2"
+              data-testid="assured-pay-promo-strip"
+            >
+              <FreeTrialBadge show />
+              <p className="text-xs text-rapido-grey" data-testid="assured-pay-incentive">
+                {FREE_TRIAL_PROMO.supportLine}
+              </p>
+            </div>
           ) : null}
           <Link href="/booking/assured-pay" onClick={() => onOpenOptIn("booking_card")}>
             <CTAButton fullWidth variant="primary" data-testid="assured-pay-opt-in-cta">
               {ctaLabel}
             </CTAButton>
           </Link>
-          <p className="text-center text-[11px] text-rapido-grey">{BOOKING_MODULE.ctaSubline}</p>
+          <p className="text-center text-[11px] text-rapido-grey" data-testid="assured-pay-cta-subline">
+            {ctaSubline}
+          </p>
         </div>
       )}
 

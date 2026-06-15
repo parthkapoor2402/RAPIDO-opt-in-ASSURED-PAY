@@ -23,20 +23,38 @@ export const BOOKING_RIDE_CARD = {
   priceCaption: "fare",
 } as const;
 
+/**
+ * Promo copy options considered:
+ *
+ * Badge: (1) "Eligible trial" ✓ | (2) "Bike trial" | (3) "Trial · bike only"
+ * Support: (1) "Limited trial on this bike ride · same fare, smoother checkout" ✓
+ *           (2) "One-time trial on this bike ride" | (3) "Eligible bike rides · trial at no extra charge"
+ * CTA support: (1) "One-time trial · no extra charge on this ride" ✓
+ *              (2) "Same fare · trial limited to eligible bike rides"
+ *              (3) "Trial applies to this bike ride only"
+ */
+export const FREE_TRIAL_PROMO = {
+  badge: "Eligible trial",
+  supportLine: "Limited trial on this bike ride · same fare, smoother checkout",
+  ctaSupport: "One-time trial · no extra charge on this ride",
+} as const;
+
 export const BOOKING_MODULE = {
   label: "Assured Pay",
   headline: "Smoother checkout at drop-off",
   helper:
     "Pay your trip fare — not the max. Lock in upfront clarity and finish digitally with less friction.",
-  incentiveFreeTrial: "First ride free · no extra charge to try",
-  ctaFreeTrial: "Try free · add Assured Pay",
-  ctaDefault: "Add Assured Pay",
-  ctaSubline: "Same fare · easier checkout at drop-off",
+  ctaLabel: "Add Assured Pay",
+  ctaSublineDefault: "Same fare · easier checkout at drop-off",
   fareDetailsSummary: "View fare limit details",
 } as const;
 
-export function getAssuredPayCtaLabel(freeTrialAvailable: boolean): string {
-  return freeTrialAvailable ? BOOKING_MODULE.ctaFreeTrial : BOOKING_MODULE.ctaDefault;
+export function getAssuredPayCtaLabel(): string {
+  return BOOKING_MODULE.ctaLabel;
+}
+
+export function getAssuredPayCtaSubline(freeTrialPromoEligible: boolean): string {
+  return freeTrialPromoEligible ? FREE_TRIAL_PROMO.ctaSupport : BOOKING_MODULE.ctaSublineDefault;
 }
 
 export const OPT_IN_SHEET = {

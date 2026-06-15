@@ -26,7 +26,10 @@ export interface AssuredPayEligibility {
   M: number;
   categoryId: RideCategoryId;
   categoryLabel: string;
-  freeTrialAvailable: boolean;
+  /** Rider profile allows trial and it has not been consumed locally. */
+  riderTrialUnused: boolean;
+  /** Bike + fare cap + trial unused — controls promo UI only. */
+  freeTrialPromoEligible: boolean;
   validReasonCodes: string[];
   hasPaymentInstrument: boolean;
   prompts: DiscoveryPrompt[];
@@ -43,6 +46,7 @@ export interface DiscoveryContextInput {
   onlinePaymentRideCount?: number;
   hasOpenResidual?: boolean;
   hasPaymentInstrument?: boolean;
+  /** Rider profile: trial not yet consumed on account. */
   freeTrialAvailable?: boolean;
   rebookingRestriction?: "none" | "assured_pay_blocked" | "repeat_unpaid_blocked";
 }

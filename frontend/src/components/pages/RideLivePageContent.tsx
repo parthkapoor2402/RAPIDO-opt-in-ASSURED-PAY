@@ -10,6 +10,7 @@ import { FareTrustIndicator } from "@/features/live-ride/components/FareTrustInd
 import { LiveRideEventTimeline } from "@/features/live-ride/components/LiveRideEventTimeline";
 import { LiveRidePlaybackControls } from "@/features/live-ride/components/LiveRidePlaybackControls";
 import { ReasonCodeUpdateList } from "@/features/live-ride/components/ReasonCodeUpdateList";
+import { RideCompletionCard } from "@/features/live-ride/components/RideCompletionCard";
 import { GrokExplanationPanel } from "@/features/grok/components/GrokExplanationPanel";
 import { useAssuredPayBooking } from "@/features/assured-pay/context/AssuredPayBookingContext";
 import { getRideCategory } from "@/features/assured-pay/lib/ride-categories";
@@ -31,6 +32,8 @@ export function RideLivePageContent() {
     timelineTitle,
     timelineSubtitle,
     setScenarioId,
+    completionVariant,
+    setCompletionVariant,
     playNextStep,
     playPrevStep,
     resetPlayback,
@@ -70,19 +73,25 @@ export function RideLivePageContent() {
           <LoadingState label="Loading live fare…" />
         ) : (
           <>
-            <FareTrustIndicator
-              trustState={trustState}
-              assuredPayActive={progress.assured_pay_active}
-            />
+            {progress.ride_phase === "completed" && progress.completion ? (
+              <RideCompletionCard completion={progress.completion} scenarioId={scenarioId} />
+            ) : (
+              <>
+                <FareTrustIndicator
+                  trustState={trustState}
+                  assuredPayActive={progress.assured_pay_active}
+                />
 
-            <FareProgressionCard
-              estimateF={progress.estimate_f}
-              buffer={progress.buffer}
-              approvedM={progress.approved_m}
-              currentFare={progress.current_fare}
-              residualDueIfEndedNow={progress.residual_due_if_ended_now}
-              trustState={trustState}
-            />
+                <FareProgressionCard
+                  estimateF={progress.estimate_f}
+                  buffer={progress.buffer}
+                  approvedM={progress.approved_m}
+                  currentFare={progress.current_fare}
+                  residualDueIfEndedNow={progress.residual_due_if_ended_now}
+                  trustState={trustState}
+                />
+              </>
+            )}
 
             <LiveRideEventTimeline
               title={timelineTitle}
@@ -90,37 +99,43 @@ export function RideLivePageContent() {
               scenarioId={scenarioId}
             />
 
-            <ReasonCodeUpdateList
-              updates={progress.reason_updates}
-              latestReasonCode={progress.latest_reason_code}
-              trustState={trustState}
-            />
-
-            <div className="pt-1">
-              <GrokExplanationPanel
-                buttonLabel="Explain my fare"
-                useCase="fare_change"
-                variant="secondary"
-                payload={{
-                  estimate_f: progress.estimate_f,
-                  approved_m: progress.approved_m,
-                  buffer: progress.buffer,
-                  current_fare: progress.current_fare,
-                  reason_label: progress.latest_reason_code
-                    ? progress.reason_updates.find(
-                        (u) => u.reason_code === progress.latest_reason_code,
-                      )?.reason_label
-                    : null,
-                }}
+            {progress.ride_phase !== "completed" ? (
+              <ReasonCodeUpdateList
+                updates={progress.reason_updates}
+                latestReasonCode={progress.latest_reason_code}
+                trustState={trustState}
               />
-            </div>
+            ) : null}
+
+            {progress.ride_phase !== "completed" ? (
+              <div className="pt-1">
+                <GrokExplanationPanel
+                  buttonLabel="Explain my fare"
+                  useCase="fare_change"
+                  variant="secondary"
+                  payload={{
+                    estimate_f: progress.estimate_f,
+                    approved_m: progress.approved_m,
+                    buffer: progress.buffer,
+                    current_fare: progress.current_fare,
+                    reason_label: progress.latest_reason_code
+                      ? progress.reason_updates.find(
+                          (u) => u.reason_code === progress.latest_reason_code,
+                        )?.reason_label
+                      : null,
+                  }}
+                />
+              </div>
+            ) : null}
 
             <LiveRidePlaybackControls
               scenarios={scenarios}
               scenarioId={scenarioId}
               stepIndex={stepIndex}
               maxStep={maxStep}
+              completionVariant={completionVariant}
               onScenarioChange={setScenarioId}
+              onCompletionVariantChange={setCompletionVariant}
               onPrevStep={playPrevStep}
               onNextStep={playNextStep}
               onReset={resetPlayback}

@@ -19,6 +19,11 @@ import {
   type RideCategoryConfig,
 } from "@/features/assured-pay/lib/ride-categories";
 import {
+  evaluateFreeTrialPromo,
+  markRiderTrialUsed,
+  readRiderTrialUnused,
+} from "@/features/assured-pay/lib/promo-eligibility";
+import {
   discoveryContextFromRiderId,
   getPrimaryPrompt,
   isEligible,
@@ -126,7 +131,17 @@ function buildEligibility(
   const { eligible, blockReasons } = isEligible(ctx);
   const category = getRideCategory(categoryId);
   const { F, buffer, M } = getCategoryFare(categoryId);
-  const prompts = resolveDiscoveryPrompts(ctx, eligible);
+  const riderTrialUnused = readRiderTrialUnused(
+    ctx.riderId,
+    Boolean(ctx.freeTrialAvailable),
+  );
+  const promo = evaluateFreeTrialPromo({
+    categoryId,
+    estimateF: F,
+    riderTrialUnused,
+    assuredPayEligible: eligible,
+  });
+  const prompts = resolveDiscoveryPrompts(ctx, eligible, promo.eligible);
 
   return {
     eligible,
@@ -136,7 +151,8 @@ function buildEligibility(
     M,
     categoryId,
     categoryLabel: category.label,
-    freeTrialAvailable: Boolean(ctx.freeTrialAvailable && eligible),
+    riderTrialUnused,
+    freeTrialPromoEligible: promo.eligible,
     validReasonCodes: VALID_REASON_CODES,
     hasPaymentInstrument: ctx.hasPaymentInstrument !== false,
     prompts,
@@ -205,11 +221,14 @@ export function AssuredPayBookingProvider({ children }: AssuredPayBookingProvide
       enabled: true,
       discoverySource: optIn.discoverySource ?? primaryPromptId ?? "booking_card",
       authorizationId: `auth_${riderId}_demo`,
-      freeTrialApplied: eligibility.freeTrialAvailable,
+      freeTrialApplied: eligibility.freeTrialPromoEligible,
     };
+    if (eligibility.freeTrialPromoEligible) {
+      markRiderTrialUsed(riderId);
+    }
     setOptIn(next);
     persistOptIn(riderId, next);
-  }, [eligibility.freeTrialAvailable, optIn.discoverySource, primaryPromptId, riderId]);
+  }, [eligibility.freeTrialPromoEligible, optIn.discoverySource, primaryPromptId, riderId]);
 
   const resetOptIn = useCallback(() => {
     setOptIn(DEFAULT_OPT_IN);
