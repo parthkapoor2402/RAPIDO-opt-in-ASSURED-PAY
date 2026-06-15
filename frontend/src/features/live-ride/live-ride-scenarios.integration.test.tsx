@@ -226,4 +226,21 @@ describe("live ride scenario integration", () => {
     );
     expect(within(card).getByTestId("ride-completion-badge")).toHaveTextContent("Under review");
   });
+
+  it("reaches Step 4 of 4 and shows completion card for each scenario", async () => {
+    const user = userEvent.setup();
+    renderLiveRidePage();
+    await waitForLiveRideReady();
+
+    for (const scenarioId of ["within_max", "buffer_zone", "exceeds_review"] as const) {
+      await selectScenario(user, scenarioId);
+      await advanceToStep(user, 3);
+
+      await waitFor(() => {
+        expect(screen.getByText("Step 4 of 4")).toBeInTheDocument();
+        expect(screen.getByTestId("ride-completion-card")).toHaveAttribute("data-scenario", scenarioId);
+        expect(screen.queryByTestId("fare-trust-indicator")).not.toBeInTheDocument();
+      });
+    }
+  });
 });

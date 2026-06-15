@@ -1,11 +1,7 @@
 import { BIKE_DEMO_BASE } from "@/features/assured-pay/lib/scenario-fare-engine";
 import { API_PREFIX, apiUrl } from "@/lib/api";
 
-import {
-  buildRideCompletionPlayback,
-  isCompletionStep,
-  type ExceedsReviewCompletionVariant,
-} from "@/features/live-ride/lib/completion-playback";
+import type { ExceedsReviewCompletionVariant } from "@/features/live-ride/lib/completion-playback";
 import type { RideProgressPayload, RideScenarioSummary } from "@/features/live-ride/types";
 import { buildMockRideProgress, DEMO_SCENARIOS } from "@/features/live-ride/mock/live-ride-mock";
 
@@ -16,6 +12,9 @@ export interface FetchRideProgressParams {
   reasonCodes?: string[];
   assuredPayActive?: boolean;
 }
+
+/** Demo playback is frontend-authoritative — avoids stale/crashed API on Vercel. */
+const DEMO_PLAYBACK_USES_MOCK = process.env.NEXT_PUBLIC_DEMO_MODE !== "false";
 
 export async function fetchRideProgress(
   params: FetchRideProgressParams,
@@ -73,13 +72,9 @@ export async function fetchRideProgressWithFallback(
   completionVariant: ExceedsReviewCompletionVariant = "valid_overage",
 ): Promise<RideProgressPayload & { timeline_title?: string; timeline_subtitle?: string }> {
   const resolvedBuffer = buffer ?? BIKE_DEMO_BASE.buffer;
-  const categoryUsesMock =
-    estimateF !== BIKE_DEMO_BASE.F || resolvedBuffer !== BIKE_DEMO_BASE.buffer;
 
-  let payload: RideProgressPayload & { timeline_title?: string; timeline_subtitle?: string };
-
-  if (categoryUsesMock) {
-    payload = buildMockRideProgress(
+  if (DEMO_PLAYBACK_USES_MOCK) {
+    return buildMockRideProgress(
       scenarioId,
       stepIndex,
       estimateF,
@@ -87,40 +82,58 @@ export async function fetchRideProgressWithFallback(
       resolvedBuffer,
       completionVariant,
     );
-  } else {
-    try {
-      payload = await fetchScenarioStep(scenarioId, stepIndex);
-    } catch {
-      payload = buildMockRideProgress(
+  }
+
+  const categoryUsesMock =
+    estimateF !== BIKE_DEMO_BASE.F || resolvedBuffer !== BIKE_DEMO_BASE.buffer;
+
+  if (categoryUsesMock) {
+    return buildMockRideProgress(
+      scenarioId,
+      stepIndex,
+      estimateF,
+      assuredPayActive,
+      resolvedBuffer,
+      completionVariant,
+    );
+  }
+
+  try {
+    const payload = await fetchScenarioStep(scenarioId, stepIndex);
+    return {
+      ...payload,
+      ...buildMockRideProgress(
         scenarioId,
         stepIndex,
         estimateF,
         assuredPayActive,
         resolvedBuffer,
         completionVariant,
-      );
-    }
-  }
-
-  if (isCompletionStep(stepIndex) && !payload.completion) {
-    payload = {
-      ...payload,
-      ride_phase: "completed",
-      completion: buildRideCompletionPlayback(
-        scenarioId,
-        estimateF,
-        resolvedBuffer,
-        completionVariant,
       ),
     };
+  } catch {
+    return buildMockRideProgress(
+      scenarioId,
+      stepIndex,
+      estimateF,
+      assuredPayActive,
+      resolvedBuffer,
+      completionVariant,
+    );
   }
-
-  return payload;
 }
 
 export async function listScenariosWithFallback(): Promise<RideScenarioSummary[]> {
+  if (DEMO_PLAYBACK_USES_MOCK) {
+    return DEMO_SCENARIOS;
+  }
+
   try {
-    return await fetchScenarios();
+    const remote = await fetchScenarios();
+    return DEMO_SCENARIOS.map((demo) => {
+      const match = remote.find((item) => item.id === demo.id);
+      return match ? { ...match, label: demo.label, step_count: demo.step_count } : demo;
+    });
   } catch {
     return DEMO_SCENARIOS;
   }

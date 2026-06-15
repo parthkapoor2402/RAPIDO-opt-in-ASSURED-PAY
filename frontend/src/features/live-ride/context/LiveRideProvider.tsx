@@ -57,9 +57,9 @@ export function LiveRideProvider({ children }: LiveRideProviderProps) {
   const [loading, setLoading] = useState(true);
 
   const maxStep = useMemo(() => {
-    const scenario = scenarios.find((s) => s.id === scenarioId);
-    return scenario?.step_count ?? DEMO_SCENARIOS[0].step_count;
-  }, [scenarios, scenarioId]);
+    const scenario = DEMO_SCENARIOS.find((s) => s.id === scenarioId);
+    return scenario?.step_count ?? 4;
+  }, [scenarioId]);
 
   const loadProgress = useCallback(async () => {
     setLoading(true);
