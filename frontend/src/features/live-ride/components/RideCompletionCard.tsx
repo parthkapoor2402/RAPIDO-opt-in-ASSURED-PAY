@@ -84,7 +84,7 @@ export function RideCompletionCard({ completion, scenarioId }: RideCompletionCar
         data-testid="ride-completion-next-step"
         className="text-xs leading-relaxed text-rapido-grey border-t border-surface-200/80 pt-2"
       >
-        <span className="font-semibold text-rapido-black/80">What's next: </span>
+        <span className="font-semibold text-rapido-black/80">What&apos;s next: </span>
         {completion.nextStep}
       </p>
     </div>
